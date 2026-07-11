@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Manage users – Correspondence Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{min-height:100vh;background:#0f172a;color:#e2e8f0;padding:26px 20px}
+.wrap{max-width:900px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.top h1{font-size:20px;color:#f1f5f9}
+.top .sub{font-size:12px;color:#94a3b8}
+.back{margin-left:auto;font-size:13px;color:#93c5fd;text-decoration:none;background:#1e3a5f;padding:8px 14px;border-radius:8px}
+.back:hover{background:#24476f}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#cbd5e1;margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:.4px;margin:12px 0 5px}
+label .lc{text-transform:none;font-weight:600;color:#94a3b8}
+input[type=text],input[type=password]{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:9px 11px;font-size:13px;color:#f1f5f9;outline:none}
+input:focus{border-color:#2563eb}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:flex;align-items:center;gap:6px;margin:0;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:6px 10px;font-size:12px;text-transform:none;letter-spacing:0;color:#e2e8f0;cursor:pointer}
+.checks input{accent-color:#2563eb}
+.row-admin{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#e2e8f0}
+.btn{margin-top:16px;background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.btn:hover{background:#1d4ed8}
+.btn.ghost{background:#334155;color:#cbd5e1;margin-left:8px}
+.btn.danger{background:#7f1d1d;color:#fecaca}
+.msg{min-height:16px;margin-top:12px;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid #334155;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#94a3b8}
+.chip{display:inline-block;background:#0f172a;border:1px solid #334155;border-radius:999px;padding:2px 9px;font-size:11px;margin:2px 2px 0 0}
+.chip.admin{background:#0e3a2a;border-color:#166534;color:#86efac}
+.muted{color:#64748b}
+.tbtn{background:none;border:1px solid #334155;border-radius:6px;color:#cbd5e1;padding:4px 9px;font-size:12px;cursor:pointer}
+.tbtn.del{color:#fca5a5;border-color:#7f1d1d}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Manage users</h1>
+      <div class="sub">Create logins and control which departments each person can see.</div>
+    </div>
+    <a class="back" href="tracker.html">← Back to tracker</a>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2 id="form-title">Add / edit user</h2>
+      <label for="f-user">Username</label>
+      <input id="f-user" type="text" placeholder="e.g. ram.thapa">
+      <label for="f-pass">Password <span class="lc">(leave blank to keep unchanged when editing)</span></label>
+      <input id="f-pass" type="password" placeholder="Set a password">
+      <div class="row-admin"><input id="f-admin" type="checkbox"> <label for="f-admin" style="margin:0;text-transform:none;letter-spacing:0;color:#e2e8f0;font-size:13px">Administrator <span class="lc">(sees &amp; edits everything, manages users)</span></label></div>
+      <div id="f-depts-wrap">
+        <label>Departments this viewer can see <span class="lc">(leave all unchecked = every department)</span></label>
+        <div class="checks" id="f-depts"><span class="muted">Loading…</span></div>
+      </div>
+      <div>
+        <button class="btn" id="f-save">Save user</button>
+        <button class="btn ghost" id="f-clear" type="button">Clear</button>
+      </div>
+      <div class="msg" id="f-msg"></div>
+    </div>
+    <div class="card">
+      <h2>Users</h2>
+      <div id="list"><p class="muted">Loading…</p></div>
+    </div>
+  </div>
+</div>
+<script>
+const esc=(s)=>String(s==null?'':s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ALL_DEPTS=[];
+
+async function guard(){
+  try{ const r=await fetch('/api/me'); if(!r.ok){ location.href='index.html'; return false; }
+    const me=await r.json(); if(!me.isAdmin){ location.href='tracker.html'; return false; } return true;
+  }catch(e){ location.href='index.html'; return false; }
+}
+async function loadDepts(){
+  try{ const r=await fetch('/api/letters'); const j=await r.json().catch(()=>({})); ALL_DEPTS=Array.isArray(j.allDepts)?j.allDepts:[]; }
+  catch(e){ ALL_DEPTS=[]; }
+  const box=document.getElementById('f-depts');
+  box.innerHTML=ALL_DEPTS.length
+    ? ALL_DEPTS.map((d)=>'<label><input type="checkbox" value="'+esc(d)+'"> '+esc(d)+'</label>').join('')
+    : '<span class="muted">No departments found in the letters file yet.</span>';
+}
+function syncDeptVisibility(){
+  document.getElementById('f-depts-wrap').style.display=document.getElementById('f-admin').checked?'none':'';
+}
+function clearForm(){
+  document.getElementById('f-user').value=''; document.getElementById('f-pass').value='';
+  document.getElementById('f-admin').checked=false;
+  document.querySelectorAll('#f-depts input').forEach((c)=>{c.checked=false;});
+  document.getElementById('form-title').textContent='Add / edit user';
+  document.getElementById('f-msg').textContent=''; syncDeptVisibility();
+}
+async function refresh(){
+  const el=document.getElementById('list');
+  const r=await fetch('/api/users');
+  if(!r.ok){ el.innerHTML='<p class="muted">Could not load users.</p>'; return; }
+  const {users}=await r.json();
+  if(!users.length){ el.innerHTML='<p class="muted">No users yet. Create one on the left.</p>'; return; }
+  el.innerHTML='<table><thead><tr><th>Username</th><th>Access</th><th></th></tr></thead><tbody>'+
+    users.map((u)=>'<tr><td><b>'+esc(u.username)+'</b></td><td>'+
+      (u.isAdmin?'<span class="chip admin">Admin · all letters</span>'
+        :(u.departments&&u.departments.length?u.departments.map((d)=>'<span class="chip">'+esc(d)+'</span>').join('')
+          :'<span class="chip">All departments</span>'))+
+      '</td><td style="white-space:nowrap;text-align:right">'+
+      '<button class="tbtn edit" data-u="'+esc(u.username)+'">Edit</button> '+
+      '<button class="tbtn del" data-u="'+esc(u.username)+'">Delete</button></td></tr>').join('')+
+    '</tbody></table>';
+  el.querySelectorAll('.edit').forEach((b)=>{ b.onclick=()=>{
+    const u=users.find((x)=>x.username===b.dataset.u);
+    document.getElementById('f-user').value=u.username; document.getElementById('f-pass').value='';
+    document.getElementById('f-admin').checked=u.isAdmin;
+    document.querySelectorAll('#f-depts input').forEach((c)=>{ c.checked=(u.departments||[]).includes(c.value); });
+    document.getElementById('form-title').textContent='Editing '+u.username;
+    const m=document.getElementById('f-msg'); m.style.color='#94a3b8'; m.textContent='Leave password blank to keep it unchanged.';
+    syncDeptVisibility(); window.scrollTo({top:0,behavior:'smooth'});
+  }; });
+  el.querySelectorAll('.del').forEach((b)=>{ b.onclick=async()=>{
+    if(!confirm('Delete user "'+b.dataset.u+'"?'))return;
+    const rr=await fetch('/api/users?u='+encodeURIComponent(b.dataset.u),{method:'DELETE'});
+    const jj=await rr.json().catch(()=>({}));
+    const m=document.getElementById('f-msg');
+    if(!rr.ok){ m.style.color='#f87171'; m.textContent=jj.error||'Delete failed'; return; }
+    refresh();
+  }; });
+}
+document.getElementById('f-admin').addEventListener('change',syncDeptVisibility);
+document.getElementById('f-clear').addEventListener('click',clearForm);
+document.getElementById('f-save').addEventListener('click',async()=>{
+  const username=document.getElementById('f-user').value.trim();
+  const password=document.getElementById('f-pass').value;
+  const isAdmin=document.getElementById('f-admin').checked;
+  const departments=[...document.querySelectorAll('#f-depts input:checked')].map((c)=>c.value);
+  const m=document.getElementById('f-msg'); m.textContent='';
+  const r=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,password,isAdmin,departments})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){ m.style.color='#f87171'; m.textContent=j.error||'Save failed'; return; }
+  const saved=username; clearForm(); refresh();
+  m.style.color='#4ade80'; m.textContent='Saved “'+saved+'” ✓';
+});
+
+(async()=>{ if(!(await guard()))return; await loadDepts(); syncDeptVisibility(); refresh(); })();
+</script>
+</body>
+</html>

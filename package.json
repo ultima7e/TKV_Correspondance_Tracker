@@ -1,0 +1,10 @@
+{
+  "name": "correspondence-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "dev": "node scripts/dev-server.js",
+    "dev:cloud": "node --env-file=.env scripts/dev-server.js"
+  }
+}

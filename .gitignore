@@ -1,0 +1,11 @@
+node_modules/
+.vercel/
+.env
+.env.local
+
+# Local dev user store (production uses Vercel KV / Upstash)
+data/.users.json
+data/.tkv_*.json
+
+# Local dev letters override (production reads/writes Nutstore over WebDAV)
+data/.letters_local.json

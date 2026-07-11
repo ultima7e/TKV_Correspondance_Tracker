@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Correspondence Tracker – Tamakoshi V HEP</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{display:flex;height:100vh;overflow:hidden;background:#f1f5f9}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+/* Table-specific scrollbar — thick and always visible */
+.ltable-scroll::-webkit-scrollbar{width:12px;height:14px}
+.ltable-scroll::-webkit-scrollbar-track{background:#cbd5e1;border-radius:8px;margin:2px}
+.ltable-scroll::-webkit-scrollbar-thumb{background:#64748b;border-radius:8px;border:3px solid #cbd5e1;min-width:40px}
+.ltable-scroll::-webkit-scrollbar-thumb:hover{background:#334155;cursor:grab}
+.ltable-scroll::-webkit-scrollbar-thumb:active{background:#0f172a;cursor:grabbing}
+.ltable-scroll::-webkit-scrollbar-corner{background:#cbd5e1}
+/* Modal & chain scrollbars */
+.modal-body::-webkit-scrollbar,.chain-timeline::-webkit-scrollbar{width:8px;height:8px}
+.modal-body::-webkit-scrollbar-track,.chain-timeline::-webkit-scrollbar-track{background:#f1f5f9;border-radius:6px;margin:4px}
+.modal-body::-webkit-scrollbar-thumb,.chain-timeline::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:6px;border:2px solid #f1f5f9}
+.modal-body::-webkit-scrollbar-thumb:hover,.chain-timeline::-webkit-scrollbar-thumb:hover{background:#64748b}
+#sidebar{width:275px;flex-shrink:0;background:#0f172a;color:white;display:flex;flex-direction:column;overflow-y:auto}
+#brand{padding:14px 16px 12px;border-bottom:1px solid #1e293b}
+#brand .project{font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:2px}
+#brand .apptitle{font-size:18px;font-weight:800}
+#brand .lcount{font-size:11px;color:#64748b;margin-top:2px}
+#brand .credit{font-size:9px;color:#94a3b8;margin-top:4px}
+.storage-panel{margin-top:10px;background:#1e293b;border-radius:8px;padding:9px 11px}
+.sp-status{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.sp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sp-label{font-size:11px;font-weight:700}
+.sp-hint{font-size:10px;color:#64748b;margin-bottom:5px;line-height:1.4}
+.sp-whoami{font-size:10px;color:#94a3b8;margin-bottom:6px;line-height:1.4}
+.sp-whoami b{color:#e2e8f0}
+.sp-btn{width:100%;border:none;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;text-align:left;margin-bottom:3px;display:block;cursor:pointer}
+.sp-btn-primary{background:#2563eb;color:white}
+.sp-btn-secondary{background:#1e3a5f;color:#93c5fd}
+.sp-btn-green{background:#166534;color:#bbf7d0}
+.sp-btn-green:hover{background:#14532d}
+.sp-btn-amber{background:#92400e;color:#fde68a}
+.sp-btn-amber:hover{background:#78350f}
+.save-flash{font-size:10px;color:#10b981;padding:3px 8px;text-align:center;opacity:0;transition:opacity .3s ease}
+.reconnect-banner{background:#1e3a5f;border-radius:6px;padding:6px 9px;font-size:10px;color:#93c5fd;margin-bottom:5px}
+.reconnect-banner button{background:#2563eb;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-top:4px;width:100%}
+
+/* Filter sections */
+.fsec{padding:9px 12px;border-bottom:1px solid #1e293b}
+.fsec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;cursor:pointer}
+.fsec-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.fsec-toggle{font-size:10px;color:#475569;background:none;border:none;padding:0}
+.fsec-mode{display:none;gap:4px;margin-bottom:5px}
+.fsec-mode button{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;border:none;cursor:pointer}
+.fpills{display:flex;flex-wrap:wrap;gap:4px;max-height:120px;overflow-y:auto}
+.fpill{padding:3px 8px;border-radius:20px;font-size:11px;border:1px solid;cursor:pointer;font-weight:500;background:transparent;color:#64748b;transition:all .12s}
+.clearf{margin-top:5px;font-size:10px;color:#64748b;background:none;border:none;padding:0;display:none;cursor:pointer}
+.cfb-row{margin-bottom:9px}
+.cfb-label{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cfb-pills{display:flex;flex-wrap:wrap;gap:3px}
+
+#nav{flex:1;padding:6px 0;border-bottom:1px solid #1e293b}
+.navbtn{width:100%;text-align:left;padding:7px 14px;border:none;background:transparent;border-left:3px solid transparent;color:#94a3b8;display:flex;align-items:center;gap:8px;font-size:12px;transition:all .12s;cursor:pointer}
+.navbtn:hover{background:#1e293b;color:#e2e8f0}
+.navbtn.active{background:#1e293b;font-weight:700}
+.navbtn .nicon{font-size:13px;min-width:18px;text-align:center}
+.navbtn .nlabel{flex:1}
+.navbtn .nbadge{border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700}
+
+/* ALL LETTERS nav item */
+#allbtn{width:100%;text-align:left;padding:8px 14px;border:none;background:transparent;color:#94a3b8;display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;border-bottom:1px solid #1e293b}
+#allbtn:hover{background:#1e293b;color:#e2e8f0}
+#allbtn.active{background:#1e293b;color:#f59e0b;font-weight:700;border-left:3px solid #f59e0b}
+
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:white;border-bottom:1px solid #e2e8f0;padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#topbar h1{font-size:15px;font-weight:800;color:#0f172a;margin:0}
+#topsub{font-size:11px;color:#94a3b8;margin-top:1px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filterbadge{border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.clearall-btn{background:none;border:none;color:#ef4444;font-size:11px;padding:0;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-out{padding:8px 16px;border-radius:8px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:500;cursor:pointer}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-sm{background:none;border-radius:5px;font-size:11px;font-weight:600;padding:3px 7px;border:1px solid;cursor:pointer}
+#content{flex:1;overflow:auto;padding:16px 20px}
+
+/* Table */
+.ltable-wrap{background:white;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden}
+.ltable-scroll{overflow:scroll;scrollbar-gutter:stable}
+table{border-collapse:collapse;font-size:12px}
+thead tr{background:#f8fafc}
+th{padding:8px 10px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:4;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
+td{padding:5px 10px;vertical-align:middle;border-bottom:1px solid #f1f5f9}
+tbody tr:hover td{background:#f8fafc}
+.lno-btn{color:#2563eb;font-weight:700;cursor:pointer;font-family:monospace;font-size:11px;white-space:nowrap;background:none;border:none;padding:0;text-align:left}
+.lno-btn:hover{text-decoration:underline}
+.spill{padding:2px 6px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap}
+.tag-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid;white-space:nowrap;cursor:pointer;margin:1px}
+.cat-badge{border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;background:white;border-radius:14px;border:2px dashed #e2e8f0;color:#94a3b8;text-align:center;gap:6px}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal{background:white;border-radius:14px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);display:flex;flex-direction:column;max-height:96vh}
+.modal-hd{padding:16px 22px 11px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:10;border-radius:14px 14px 0 0;flex-shrink:0}
+.modal-hd h2{font-size:15px;font-weight:800;color:#0f172a;margin:0}
+.mclose{background:none;border:none;font-size:22px;color:#94a3b8;line-height:1;padding:0;cursor:pointer}
+.modal-body{padding:16px 22px;overflow-y:auto;overflow-x:hidden;flex:1;scroll-behavior:smooth}
+.modal-ft{padding:11px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:9px;flex-shrink:0}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field.full{grid-column:1/-1}
+.field label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:13px;outline:none;color:#1e293b;background:#fafafa}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#93c5fd;background:white}
+.field textarea{height:62px;resize:vertical}
+
+/* Letter number */
+.lno-preview{font-family:monospace;font-size:12px;padding:6px 10px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;min-height:30px;word-break:break-all;line-height:1.5;margin-bottom:5px}
+.lno-pfx-hd{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.lno-pfx-hd .lno-acts button{background:none;border:none;font-size:10px;cursor:pointer;font-weight:600;padding:0 3px}
+.lno-pfx-display{font-family:monospace;font-size:12px;color:#475569;padding:5px 9px;background:#f1f5f9;border-radius:6px;border:1px solid #e2e8f0;min-height:29px;word-break:break-all;line-height:1.5}
+.lno-pfx-input{width:100%;padding:5px 9px;border-radius:6px;border:1px solid #93c5fd;font-size:12px;outline:none;font-family:monospace;box-sizing:border-box;background:#eff6ff;color:#1e293b}
+.lno-sfx-lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px}
+.lno-sfx-input{width:100%;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:15px;outline:none;font-family:monospace;font-weight:800;color:#0f172a;box-sizing:border-box;background:#fafafa}
+.lno-sfx-input:focus{border-color:#93c5fd;background:white}
+
+/* Multi-value row */
+.mv-row{display:flex;gap:7px;margin-bottom:4px}
+.mv-row input{flex:1;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:13px;outline:none;background:#fafafa;font-family:monospace;color:#1e293b}
+.mv-row input:focus{border-color:#93c5fd}
+.addbtn{background:#2563eb;color:white;border:none;border-radius:7px;padding:7px 12px;font-weight:700;font-size:12px;white-space:nowrap;cursor:pointer}
+.mv-tags{display:flex;flex-wrap:wrap;gap:4px;padding:7px;background:#f8fafc;border-radius:7px;border:1px solid #e2e8f0;margin-top:3px}
+.mv-tag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:3px 9px;font-size:12px;font-family:monospace;border:1px solid}
+.mv-tag .rx{background:none;border:none;color:#94a3b8;font-size:14px;line-height:1;cursor:pointer;padding:0}
+
+/* Dropdown+custom row */
+.dc-row{display:flex;gap:7px}
+.dc-row select{flex:1;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:13px;outline:none;background:#fafafa;color:#1e293b}
+.dc-row select:focus{border-color:#93c5fd}
+
+/* Tag/doctype/location selector */
+.sel-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;min-height:20px}
+.create-row{display:flex;gap:7px;margin-bottom:7px}
+.create-row input{flex:1;padding:6px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;outline:none;color:#1e293b;background:#fafafa}
+.create-row input:focus{border-color:#93c5fd}
+.create-btn{border:none;border-radius:7px;padding:6px 12px;font-weight:700;font-size:12px;white-space:nowrap;cursor:pointer}
+.pill-grid{background:#f8fafc;border-radius:9px;padding:9px;border:1px solid #e2e8f0}
+.pg-label{font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.pg-pills{display:flex;flex-wrap:wrap;gap:5px;max-height:120px;overflow-y:auto}
+.pg-pill{padding:3px 9px;border-radius:20px;font-size:11px;border:1px solid;cursor:pointer;font-weight:500;background:white;color:#64748b;transition:all .1s}
+
+/* Detail */
+.det-hd{padding:16px 22px;border-bottom:1px solid #e2e8f0;border-radius:14px 14px 0 0}
+.det-sec{padding:12px 22px;border-bottom:1px solid #e2e8f0}
+.det-sec h3{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.refboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.refbox{background:white;border-radius:8px;padding:8px 11px;border:1px solid}
+.rblabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.rbval{font-family:monospace;font-size:11px;font-weight:700;line-height:1.6}
+.det-ft{padding:11px 22px;display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;border-radius:0 0 14px 14px}
+.confirm-wrap{max-width:340px;text-align:center;padding:24px 28px}
+
+/* Correspondence Chain */
+.chain-modal{max-width:720px;overflow:hidden}
+.chain-modal .modal-body{overflow-x:hidden}
+.chain-timeline{position:relative;padding:0 0 8px 0}
+.chain-item{display:flex;gap:14px;margin-bottom:6px;position:relative}
+.chain-spine{display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0}
+.chain-dot{width:14px;height:14px;border-radius:50%;border:2px solid;flex-shrink:0;margin-top:14px;z-index:1;position:relative}
+.chain-line{width:2px;flex:1;min-height:20px;margin-top:2px}
+.chain-card{flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:11px 14px;background:white;cursor:pointer;transition:all .12s;margin-bottom:4px;overflow:hidden;min-width:0}
+.chain-card:hover{border-color:#93c5fd;background:#eff6ff}
+.chain-card.current{border-width:2px;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.chain-card .cc-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.chain-card .cc-lno{font-family:monospace;font-weight:800;font-size:13px;color:#2563eb}
+.chain-card .cc-sub{font-size:13px;color:#334155;font-weight:500;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chain-card .cc-refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chain-card .cc-ref-pill{font-family:monospace;font-size:10px;padding:1px 7px;border-radius:4px;border:1px solid}
+.chain-date{font-size:11px;color:#94a3b8;white-space:nowrap;margin-top:15px;width:70px;flex-shrink:0;text-align:right}
+
+.import-modal{max-width:560px}
+.import-preview{background:#f8fafc;border-radius:9px;border:1px solid #e2e8f0;overflow:hidden;margin:12px 0}
+.import-preview table{width:100%;border-collapse:collapse;font-size:11px}
+.import-preview th{background:#f1f5f9;padding:6px 10px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e2e8f0}
+.import-preview td{padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#1e293b}
+.import-preview tr:last-child td{border-bottom:none}
+.import-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}
+.import-summary-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;text-align:center}
+.import-summary-box .isb-count{font-size:18px;font-weight:800;color:#0f172a}
+.import-summary-box .isb-label{font-size:10px;color:#64748b;margin-top:2px}
+.drop-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .15s}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#2563eb;background:#eff6ff}
+.drop-zone .dz-icon{font-size:32px;margin-bottom:8px}
+.drop-zone .dz-text{font-size:14px;font-weight:600;color:#64748b}
+.drop-zone .dz-sub{font-size:11px;color:#94a3b8;margin-top:3px}
+
+/* ══ CALENDAR MODULE ═══════════════════════════════════════════════════════ */
+#cal-overlay{position:fixed;inset:0;background:#0f172a;z-index:2000;display:none;flex-direction:column;overflow:hidden}
+#cal-overlay.open{display:flex}
+.cal-topbar{background:#0f172a;border-bottom:1px solid #1e293b;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cal-topbar .ct-left{display:flex;align-items:center;gap:14px}
+.cal-topbar .ct-brand{font-size:16px;font-weight:800;color:white}
+.cal-topbar .ct-sub{font-size:11px;color:#475569}
+.cal-topbar .ct-close{background:none;border:none;color:#64748b;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.cal-topbar .ct-close:hover{background:#1e293b;color:white}
+.cal-body{flex:1;display:flex;overflow:hidden}
+
+/* ── LEFT: calendar panel ── */
+.cal-left{width:420px;flex-shrink:0;background:#0f172a;border-right:1px solid #1e293b;display:flex;flex-direction:column;overflow:hidden}
+.cal-nav{padding:18px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cal-nav .cn-title{font-size:20px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cal-nav .cn-title:hover{color:#93c5fd}
+.cal-nav .cn-arrows{display:flex;gap:6px}
+.cal-nav .cn-arrows button{background:#1e293b;border:none;color:#94a3b8;width:32px;height:32px;border-radius:7px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.cal-nav .cn-arrows button:hover{background:#2563eb;color:white}
+.cal-stats{padding:0 20px 10px;display:flex;gap:8px;flex-wrap:wrap}
+.cal-stat-pill{background:#1e293b;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
+.cal-grid{flex:1;overflow-y:auto;padding:0 16px 16px}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cal-dow span{text-align:center;font-size:10px;font-weight:700;color:#475569;padding:6px 0;text-transform:uppercase;letter-spacing:.5px}
+.cal-weeks{display:flex;flex-direction:column;gap:2px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day{min-height:62px;border-radius:8px;padding:6px 7px;cursor:pointer;transition:all .12s;border:1px solid transparent;display:flex;flex-direction:column;position:relative;background:#111827}
+.cal-day:hover{background:#1e293b;border-color:#334155}
+.cal-day.empty{background:transparent;cursor:default;border:none}
+.cal-day.today{border-color:#2563eb!important;background:#1e3a5f}
+.cal-day.selected{background:#1e3a5f!important;border-color:#3b82f6!important;box-shadow:0 0 0 2px rgba(59,130,246,.3)}
+.cal-day.has-letters{background:#0d2137}
+.cal-day .cd-num{font-size:12px;font-weight:700;color:#64748b;line-height:1;margin-bottom:4px}
+.cal-day.today .cd-num{color:#60a5fa;background:#1e40af;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.cal-day.selected .cd-num{color:#93c5fd}
+.cal-day.has-letters .cd-num{color:#e2e8f0}
+.cal-day .cd-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto}
+.cal-day .cd-dot{width:6px;height:6px;border-radius:50%}
+.cal-day .cd-count{font-size:9px;color:#64748b;margin-top:1px;line-height:1}
+.cal-day.selected .cd-count{color:#93c5fd}
+
+/* ── Legend ── */
+.cal-legend{padding:10px 20px 14px;border-top:1px solid #1e293b;display:flex;gap:14px;flex-shrink:0}
+.cal-legend .cl-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#64748b}
+.cal-legend .cl-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── Year picker popup ── */
+.jump-picker{position:absolute;top:55px;left:10px;right:10px;background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;z-index:200;box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.jp-year-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.jp-year-row input{flex:1;background:#0f172a;border:1px solid #334155;border-radius:6px;color:white;font-size:14px;font-weight:700;padding:5px 9px;outline:none;text-align:center;width:70px}
+.jp-year-row input:focus{border-color:#2563eb}
+.jp-year-btns{display:flex;gap:4px}
+.jp-year-btns button{background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:5px;padding:4px 7px;font-size:11px;cursor:pointer}
+.jp-year-btns button:hover{background:#2563eb;color:white;border-color:#2563eb}
+.jp-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.jp-months button{background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:6px;padding:6px 4px;font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .1s}
+.jp-months button:hover{background:#2563eb;color:white;border-color:#2563eb}
+.jp-months button.active{background:#2563eb;color:white;border-color:#2563eb}
+.jp-months button.has-letters{border-color:#10b981;color:#10b981}
+.jp-months button.has-letters.active{background:#2563eb;color:white;border-color:#2563eb}
+.jp-go{width:100%;background:#2563eb;color:white;border:none;border-radius:7px;padding:8px;font-size:13px;font-weight:700;cursor:pointer}
+.jp-go:hover{background:#1d4ed8}
+/* ── Month picker — jump to month shows letters immediately ── */
+.jp-months button.has-letters-sel{border-color:#10b981;background:#052e16;color:#10b981}
+/* ── Week row hover/selection ── */
+.cal-week:hover{background:rgba(255,255,255,.05);border-radius:6px}
+.cal-week.week-selected{background:rgba(37,99,235,.15);border-radius:6px;outline:1px solid rgba(37,99,235,.4)}
+/* ── Nutstore open link badge ── */
+.dc-lno-link{text-decoration:none!important;cursor:pointer}
+.dc-lno-link:hover{text-decoration:underline!important}
+.dc-open-badge{font-size:9px;font-weight:700;background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;margin-left:3px;vertical-align:middle;white-space:nowrap}
+/* ── Calendar right panel — view tabs & dept filter ── */
+.dp-view-tabs{display:flex;border:1px solid #e2e8f0;border-radius:7px;overflow:hidden;flex-shrink:0}
+.dp-view-tab{background:white;border:none;border-right:1px solid #e2e8f0;padding:5px 12px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;transition:all .1s;white-space:nowrap}
+.dp-view-tab:last-child{border-right:none}
+.dp-view-tab:hover{background:#f8fafc;color:#0f172a}
+.dp-view-tab.active{background:#2563eb;color:white}
+.dp-dept-bar{background:white;border-bottom:1px solid #e2e8f0;padding:7px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+/* ── Pending status badges ── */
+.pending-badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.pending-badge.is-pending{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+.pending-badge.is-replied{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.pending-badge.is-cleared{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.cal-pending-btn{font-size:10px;padding:3px 9px;border-radius:5px;cursor:pointer;font-weight:700;white-space:nowrap;transition:all .1s}
+.cal-pending-btn.active-pending{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+.cal-pending-btn.active-replied{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.cal-pending-btn.inactive{background:white;color:#64748b;border:1px solid #e2e8f0}
+.dp-dept-bar label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.dp-dept-sel{background:#f8fafc;border:1px solid #e2e8f0;color:#0f172a;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;outline:none;min-width:120px}
+.dp-dept-sel:focus{border-color:#2563eb}
+/* Jump input in nav bar */
+.cal-jump-row{padding:4px 20px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cal-jump-row label{font-size:10px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.cal-jump-row input[type=date]{background:#1e293b;border:1px solid #334155;color:#93c5fd;font-size:12px;padding:4px 8px;border-radius:6px;outline:none;cursor:pointer;flex:1}
+.cal-jump-row input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5) sepia(1) saturate(2) hue-rotate(190deg);cursor:pointer}
+.cal-jump-row button{background:#2563eb;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* ── RIGHT: date letter panel ── */
+.cal-right{flex:1;background:#f1f5f9;display:flex;flex-direction:column;overflow:hidden}
+#dp-letters-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.cal-right-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;text-align:center;gap:8px}
+.cal-right-empty .ce-icon{font-size:52px;opacity:.4}
+.cal-right-empty .ce-title{font-size:15px;font-weight:700;color:#64748b}
+.cal-right-empty .ce-sub{font-size:12px}
+.dp-header{background:white;border-bottom:1px solid #e2e8f0;padding:16px 22px;flex-shrink:0}
+.dp-header h2{font-size:18px;font-weight:800;color:#0f172a;margin:0 0 4px}
+.dp-header .dp-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dp-header .dp-badge{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.dp-search{padding:12px 22px;background:white;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+.dp-search input{width:100%;padding:8px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;outline:none;color:#1e293b;background:#f8fafc}
+.dp-search input:focus{border-color:#93c5fd;background:white}
+.dp-letters{flex:1;overflow-y:auto;padding:16px 22px}
+.dp-section-hd{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px;padding:0 0 6px;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;gap:7px}
+.dp-card{background:white;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .12s;position:relative}
+.dp-card:hover{border-color:#93c5fd;background:#f0f9ff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.dp-card .dc-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+.dp-card .dc-lno{font-family:monospace;font-weight:800;font-size:12px}
+.dp-card .dc-sub{font-size:14px;color:#0f172a;font-weight:700;line-height:1.4;margin-bottom:5px}
+.dp-card .dc-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dp-card .dc-meta span{font-size:10px;color:#94a3b8}
+.dp-card .dc-chain-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#e0f2fe;color:#0369a1;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;opacity:0;transition:opacity .15s}
+.dp-card:hover .dc-chain-btn{opacity:1}
+.dp-card .dc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.dp-empty{text-align:center;color:#94a3b8;font-size:13px;padding:24px;background:white;border-radius:10px;border:2px dashed #e2e8f0}
+
+/* Expandable subject cell */
+.subj-cell{cursor:default}
+.subj-text{color:#0f172a;font-weight:600;font-size:13px;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  white-space:normal;word-break:break-word}
+
+/* Document Links */
+.doc-link{color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-weight:700;border-bottom:1px dashed #93c5fd;padding-bottom:1px;transition:all .12s}
+.doc-link:hover{color:#1d4ed8;border-bottom-style:solid;background:#eff6ff;border-radius:3px;padding:1px 4px}
+.doc-link .dl-icon{font-size:13px;flex-shrink:0}
+.att-link{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;margin-bottom:5px;transition:all .12s;text-decoration:none}
+.att-link:hover{background:#eff6ff;border-color:#93c5fd}
+.att-link .al-icon{font-size:14px;flex-shrink:0}
+.att-link .al-name{font-size:13px;color:#334155;font-weight:500;flex:1}
+.att-link .al-ext{font-size:10px;color:#2563eb;font-weight:700;background:#dbeafe;border-radius:4px;padding:1px 6px}
+.att-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px;padding:8px;background:#f8fafc;border-radius:7px;border:1px solid #e2e8f0}
+.att-item input{padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;outline:none;color:#1e293b;background:white;width:100%}
+.att-item input:focus{border-color:#93c5fd}
+.att-item input.url-inp{font-family:monospace;font-size:11px;color:#2563eb}
+.att-remove{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:5px 9px;font-size:12px;cursor:pointer;font-weight:700;height:fit-content;white-space:nowrap}
+.att-remove:hover{background:#fee2e2}
+.add-att-btn{background:#eff6ff;border:1px dashed #93c5fd;color:#2563eb;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;width:100%;text-align:left;margin-top:4px}
+.add-att-btn:hover{background:#dbeafe}
+.lno-link-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;background:#dbeafe;color:#2563eb;border-radius:4px;padding:1px 6px;font-weight:700;vertical-align:middle;margin-left:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div id="brand">
+    <div class="project">Tamakoshi V HEP</div>
+    <div class="apptitle">Correspondence Tracker</div>
+    <div class="lcount" id="lcount">0 total letters</div>
+    <div class="credit">created by Sagar Bhattarai</div>
+    <div class="storage-panel">
+      <div class="sp-status">
+        <div class="sp-dot" id="sp-dot" style="background:#f59e0b"></div>
+        <span class="sp-label" id="sp-label" style="color:#f59e0b">Loading…</span>
+      </div>
+      <div id="sp-whoami" class="sp-whoami"></div>
+      <button class="sp-btn sp-btn-green"     id="sp-save-btn" onclick="saveNow()" style="display:none">💾 Save Now</button>
+      <button class="sp-btn sp-btn-secondary" id="sp-retry-btn" onclick="loadFromServer()" style="display:none">↻ Retry Load</button>
+      <button class="sp-btn sp-btn-amber" id="sp-export-csv-btn" onclick="exportCSV()" style="margin-top:6px">⬆ Export CSV</button>
+      <a class="sp-btn sp-btn-secondary" id="sp-admin-btn" href="admin.html" style="display:none;margin-top:6px;text-align:center;text-decoration:none">👥 Manage users</a>
+      <button class="sp-btn sp-btn-secondary" id="sp-logout-btn" onclick="logout()" style="margin-top:6px">⎋ Log out</button>
+    </div>
+    <div class="save-flash" id="save-flash">✓ Saved to Nutstore</div>
+  </div>
+
+  <!-- Search -->
+  <div class="fsec" style="padding-top:9px;padding-bottom:9px">
+    <div style="position:relative">
+      <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#475569;font-size:13px">⌕</span>
+      <input id="sinp" placeholder="Search letter, ref, tag…" oninput="onSrch(this.value)" onkeydown="if(event.key==='Enter')doSearch()"
+        style="width:100%;padding:7px 7px 7px 27px;border-radius:7px;border:1px solid #1e293b;background:#1e293b;color:white;font-size:12px;outline:none"/>
+    </div>
+    <div id="searchbtns" style="display:none;justify-content:space-between;margin-top:5px">
+      <button style="background:#2563eb;color:white;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer" onclick="doSearch()">Search</button>
+      <button style="background:none;border:none;color:#64748b;font-size:11px;cursor:pointer" onclick="clearSearch()">✕ Clear</button>
+    </div>
+  </div>
+
+  <!-- Compact Filters -->
+  <div class="fsec" id="filters-sec">
+    <div class="fsec-head" onclick="toggleSec('filters')">
+      <span class="fsec-label">🔍 Filters</span>
+      <span id="filter-count-badge" style="font-size:10px;font-weight:700;color:#2563eb;background:#eff6ff;border-radius:8px;padding:1px 6px;display:none;margin-left:4px"></span>
+      <span class="fsec-toggle" id="filters-arrow">▼</span>
+    </div>
+    <div id="filters-body">
+      <div id="filter-bar"></div>
+    </div>
+  </div>
+
+  <!-- All letters button -->
+  <button id="allbtn" onclick="setTab('__all__')">
+    <span style="font-size:13px;min-width:18px;text-align:center">🔎</span>
+    <span style="flex:1">All Letters</span>
+    <span id="allbadge" style="background:#1e293b;color:#475569;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700">0</span>
+  </button>
+
+  <!-- Category nav -->
+  <nav id="nav"></nav>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div><h1 id="ttitle">Incoming Letters</h1><div id="topsub"></div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="data-date-badge" style="display:flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:#166534;white-space:nowrap" title="Date of the most recently added letter">
+        <span style="font-size:13px">📋</span>
+        <span>Data Date: </span><span id="data-date-val" style="color:#15803d">—</span>
+      </div>
+      <button onclick="openCalendar()" style="background:#1e293b;color:#93c5fd;border:1px solid #334155;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <span>📅</span><span>Calendar</span>
+      </button>
+      <div id="edit-btns" style="display:none;gap:8px;align-items:center">
+        <button class="btn-out" id="importbtn" style="font-size:12px;padding:5px 12px" onclick="openImportModal()">⬇ Import CSV</button>
+        <button class="btn-primary" id="addbtn" onclick="openAdd()" style="font-size:13px;padding:7px 16px">+ Add Letter</button>
+      </div>
+      <button id="lockbtn" onclick="handleLockBtn()" title="Read-only mode — click to unlock" style="background:#1e293b;color:#fbbf24;border:1px solid #f59e0b;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">🔒 Locked</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+<div id="mroot"></div>
+<div id="cal-overlay">
+  <div class="cal-topbar">
+    <div class="ct-left">
+      <span style="font-size:20px">📅</span>
+      <div>
+        <div class="ct-brand">Correspondence Calendar</div>
+        <div class="ct-sub">Tamakoshi V HEP — Document Organizer</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-out" style="font-size:12px;padding:5px 14px;background:transparent;color:#64748b;border-color:#334155" onclick="calGoToday()">Today</button>
+      <button class="ct-close" onclick="closeCalendar()" title="Close Calendar">×</button>
+    </div>
+  </div>
+  <div class="cal-body">
+    <!-- LEFT: Calendar -->
+    <div class="cal-left">
+      <div class="cal-nav" style="position:relative">
+        <div class="cn-title" onclick="toggleYearPicker()" id="cal-month-title" title="Click to jump to any month/year">June 2026 ▾</div>
+        <div class="cn-arrows">
+          <button onclick="calNav(-1)" title="Previous month">‹</button>
+          <button onclick="calNav(1)"  title="Next month">›</button>
+        </div>
+        <div class="jump-picker" id="year-picker" style="display:none">
+          <div class="jp-year-row">
+            <button class="jp-year-btns" onclick="jpYearStep(-1)" style="background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:5px;padding:4px 9px;font-size:13px;cursor:pointer">‹</button>
+            <input type="number" id="jp-year-inp" value="2026" min="2020" max="2030" oninput="renderJpMonths()"/>
+            <button onclick="jpYearStep(1)" style="background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:5px;padding:4px 9px;font-size:13px;cursor:pointer">›</button>
+          </div>
+          <div class="jp-months" id="jp-months"></div>
+          <button class="jp-go" onclick="applyJump()">Go to Month</button>
+        </div>
+      </div>
+      <div class="cal-jump-row">
+        <label>Go to date:</label>
+        <input type="date" id="cal-date-jump" onchange="jumpToDate(this.value)"/>
+      </div>
+      <div class="cal-stats" id="cal-stats"></div>
+      <div class="cal-grid">
+        <div class="cal-dow">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="cal-weeks" id="cal-weeks"></div>
+      </div>
+      <div class="cal-legend">
+        <div class="cl-item"><div class="cl-dot" style="background:#10b981"></div>Outgoing</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#0ea5e9"></div>Incoming</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#8b5cf6"></div>Other</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#2563eb;outline:2px solid #2563eb;outline-offset:1px"></div>Today</div>
+      </div>
+    </div>
+    <!-- RIGHT: Date letters -->
+    <div class="cal-right" id="cal-right">
+      <div class="cal-right-empty">
+        <div class="ce-icon">📅</div>
+        <div class="ce-title">Select a date</div>
+        <div class="ce-sub">Click any highlighted date to view letters</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONFIG ════════════════════════════════════════════════════════════════════
+const CATS=[
+  {id:"incoming",    label:"Incoming Letters",         short:"Incoming",  color:"#0ea5e9",bg:"#e0f2fe",icon:"↓", dark:"#0369a1"},
+  {id:"outgoing",    label:"Outgoing Letters",         short:"Outgoing",  color:"#10b981",bg:"#d1fae5",icon:"↑", dark:"#047857"},
+  {id:"employer",    label:"Employer's Letters",       short:"Employer",  color:"#8b5cf6",bg:"#ede9fe",icon:"🏢",dark:"#6d28d9"},
+  {id:"eng_employer",label:"Engineer to Employer's",  short:"Eng→Empl.", color:"#f97316",bg:"#ffedd5",icon:"📋",dark:"#c2410c"},
+  {id:"gov_out",     label:"Govt. Letters (Outgoing)",short:"Govt. Out", color:"#06b6d4",bg:"#cffafe",icon:"🏛↑",dark:"#0e7490"},
+  {id:"gov_in",      label:"Govt. Letters (Incoming)",short:"Govt. In",  color:"#ef4444",bg:"#fee2e2",icon:"🏛↓",dark:"#b91c1c"},
+];
+const STATUSES={A:{bg:"#dcfce7",fg:"#166534"},AAN:{bg:"#ffedd5",fg:"#9a3412"},RFC:{bg:"#dbeafe",fg:"#1e40af"},Revise:{bg:"#fef9c3",fg:"#854d0e"},Pending:{bg:"#f1f5f9",fg:"#475569"},Closed:{bg:"#e5e7eb",fg:"#374151"}};
+const DEF_DEPTS=["QA","QC","Design","Contract","Admin","Geology","Planning & Schedule","EHS","Purchase","Construction"];
+const DEF_DOCTYPES=["Design Submittal","Method Statement","Geological Report","SoC","Early Warning","EOT","As-Built Drawing","Meeting Minutes","NCR","Progress Report","IPS","Material Approval","QAP","Force Majeure","Claim","EHS Plan","Baseline Schedule","Personnel"];
+const DEF_LOCS=["Adit-1","Adit-2","Adit-3","Adit-4","PHC","MAT","CVT","Connecting Tunnel","TRC","Escape Tunnel","Bus Duct Tunnel","VPS","VHC","Access to VHC","Upstream Manifold","HRT","Surge Shaft","Headpond","Spillway","TRT"];
+const STAGS=["Dispute","Insurance","Suspension","Payment","Excavation","Rock Support","Geological","Shotcrete","Concrete Works","Blasting","Mechanical/Electrical","Urgent","Reminder","Safety"];
+const TCOLORS=["#0ea5e9","#10b981","#8b5cf6","#f97316","#ef4444","#06b6d4","#ec4899","#84cc16","#f59e0b","#6366f1","#14b8a6","#e11d48"];
+function catPfx(cat){const yr=new Date().getFullYear();return({incoming:"LOT-01/SINOHYDRO-KSNS-JV/",outgoing:"TKV/COM/"+yr+"/",employer:"",eng_employer:"DOLSAR-CSPDR-JV/",gov_out:"TKV/SINO/GoN/"+yr+"/",gov_in:""})[cat]||"";}
+
+// ══ EDIT-MODE PIN — change this to your preferred PIN ════════════════════════
+const EDIT_PIN="8624";
+let _editMode=false; // session-only; resets to read-only on every page load
+let _prevChainId=null; // id of the letter whose chain was open when user clicked into detail
+
+// ══ STATE ════════════════════════════════════════════════════════════════════
+let ST={
+  letters:[], tab:"incoming",
+  allTags:[...STAGS], allDocTypes:[...DEF_DOCTYPES], allLocations:[...DEF_LOCS], allDepts:[...DEF_DEPTS],
+  activeTags:[], activeDocTypes:[], activeLocations:[], activeDepts:[],
+  tagMode:"AND", dtMode:"AND", locMode:"AND",
+  search:"", searchActive:false,
+  sort:{f:"letterNumber",d:"desc"},
+  collapsed:{tags:false, dt:false, loc:false, dept:false, resp:false, filters:false, fb_dept:false, fb_dt:false, fb_loc:false, fb_tags:false, fb_pending:false},
+  pendingFilter:null,  // null | 'pending' | 'overdue' | 'critical'
+  page:0, pageSize:150,
+};
+
+
+function catOf(id){return CATS.find(c=>c.id===id)||CATS[0];}
+function tc(tag){const all=[...ST.allTags,...ST.allDocTypes,...ST.allLocations,...ST.allDepts];const i=all.indexOf(tag);return TCOLORS[Math.abs(i)%TCOLORS.length];}
+function fmtD(d){
+  if(!d)return"—";
+  try{
+    const dt=new Date(d);
+    if(isNaN(dt.getTime()))return typeof d==="string"&&d.trim()?d.trim():"—";
+    const M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return dt.getDate()+"-"+M[dt.getMonth()]+"-"+dt.getFullYear();
+  }catch{return typeof d==="string"&&d.trim()?d.trim():"—";}
+}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+
+// Clean corrupted/special Unicode characters before display
+function cleanTxt(s){
+  if(!s) return "";
+  return String(s)
+    .replace(//g,"'").replace(//g,"'").replace(//g,'"').replace(//g,'"')
+    .replace(//g,"•").replace(//g,"-").replace(//g,"-").replace(//g,"")
+    .replace(/[-]/g,"")
+    .replace(/[‘’‚‛]/g,"'").replace(/[“”„‟]/g,'"')
+    .replace(/[–—―]/g,"-").replace(/…/g,"...").replace(/ /g," ")
+    .replace(/�/g,"").replace(/[￰-￿]/g,"")
+    .replace(/ {2,}/g," ").trim();
+}
+
+// Auto-detect document type(s) from a letter's subject.
+// Returns an array of matching doc type strings (may be empty).
+function autoDetectDocTypes(letter) {
+  const s = letter.subject || '';
+  const types = [];
+
+  // DESIGN SUBMITTAL — letter involves submitting or reviewing a technical drawing / design document
+  const hasDrawing = /\bdraw(?:ing|ings)?\b/i.test(s);
+  // report/calculation/analysis/data sheet on an engineering topic
+  const hasTechDoc =
+    /\b(?:report|calculation|analysis|data sheet)\b/i.test(s) &&
+    /\b(?:structural|reinforcement|concrete lining|rock support|basic design|detail design|detailed design|head\s?loss|headpond|headrace|tailrace|powerhouse|transformer cavern|spillway|pressure shaft|surge|bus duct|escape tunnel|connecting tunnel|test tunnel|valve house|pull.?out|as.?built|investigation work|reassessment|overbreak|hydro.?mechanical|geotechn|invert|cavern excavation|tunnel excavation|lining detail|steel lining|penstock|manifold|arrangement plan|portal|spoil tip|disposal area|slope protection|river diversion|adit.?\d|pressure tunnel)\b/i.test(s);
+  // "Detail Design" or "Basic Design" explicitly submitted/reviewed (not just mentioned in context)
+  const hasNamedDesignDoc =
+    /\b(?:basic design|detail design|detailed design|preliminary design)\b/i.test(s) &&
+    /\b(?:submission|resubmission|review|approval|comment|response|engineer.s)\b/i.test(s);
+  if ((hasDrawing || hasTechDoc || hasNamedDesignDoc) &&
+      !/\b(?:monthly progress report|weekly progress report|daily progress report|quality assurance plan|qap|method statement|construction scheme|emergency preparedness|management plan|report formats?\b|minutes of meeting)\b/i.test(s)) {
+    types.push('Design Submittal');
+  }
+
+  // AS-BUILT DRAWING (also keep Design Submittal tag)
+  if (/\bas.?built\s*draw/i.test(s)) {
+    if (!types.includes('Design Submittal')) types.push('Design Submittal');
+    types.push('As-Built Drawing');
+  }
+
+  // PROGRESS REPORT
+  if (/\b(?:monthly|weekly|daily)\b.*\bprogress report\b|\bprogress report\b.*\b(?:monthly|weekly|daily)\b|\bdpr\b/i.test(s)) {
+    types.push('Progress Report');
+  }
+
+  // METHOD STATEMENT
+  if (/\bmethod statement\b|\bconstruction scheme\b|\bconstruction method\b/i.test(s)) {
+    types.push('Method Statement');
+  }
+
+  // GEOLOGICAL REPORT
+  if (/\b(?:geological report|geotechnical.*report|geo.technical.*report|site investigation (?:proposal|report|work)|investigation work report|hydrofracturing.*test|borehole.*investigation)\b/i.test(s)) {
+    types.push('Geological Report');
+  }
+
+  // MEETING MINUTES
+  if (/\b(?:minutes of meeting|meeting minutes)\b/i.test(s)) {
+    types.push('Meeting Minutes');
+  }
+
+  // QAP
+  if (/\b(?:quality assurance plan|quality manual|qap)\b/i.test(s)) {
+    types.push('QAP');
+  }
+
+  // NCR
+  if (/\bnon.conformi|\bnon.conformance|\bncr\b/i.test(s)) {
+    types.push('NCR');
+  }
+
+  // MATERIAL APPROVAL — material/product submissions for testing or approval
+  if (/\b(?:for approval|source approval|trial mix|source visit|pre.?construction test|shotcrete thickness test)\b/i.test(s) ||
+      /\b(?:chemical|physical|laboratory).{0,20}test(?:ing)? report\b/i.test(s) ||
+      /\b(?:admixture|accelerator|fly ash|silica fume|steel fi(?:ber|bre)|rebar coupler|pvc water stop|grouting mix|grouting mix|hdpe.*pipe|primer coating|bearing plate|rock bolt.*nuts?|steel plate|rubber stop)\b.*\b(?:approval|review|testing|submission)\b/i.test(s) ||
+      /\b(?:approval|review).{0,40}\b(?:admixture|accelerator|rebar|steel plate|grouting|pvc|hdpe|primer|bearing plate)\b/i.test(s) ||
+      /\bcalibration\b.*\b(?:batching plant|laboratory|equip)|\b(?:batching plant|laboratory|equip).{0,20}\bcalibration\b/i.test(s) ||
+      /\bpull.out test\b/i.test(s)) {
+    types.push('Material Approval');
+  }
+
+  // IPS — Interim Payment Stage submittals
+  if (/\bips[-\s]?\d+\b|\bsub.?milestone\b/i.test(s)) {
+    types.push('IPS');
+  }
+
+  // FORCE MAJEURE
+  if (/\bforce majeu?re\b/i.test(s)) {
+    types.push('Force Majeure');
+  }
+
+  // EOT
+  if (/\bextension of time\b|\beot\b/i.test(s)) {
+    types.push('EOT');
+  }
+
+  // EARLY WARNING
+  if (/\bearly warning\b/i.test(s)) {
+    types.push('Early Warning');
+  }
+
+  // CLAIM
+  if (/\b(?:arbitration|claim)\b|financial relief|cash flow disruption/i.test(s)) {
+    types.push('Claim');
+  }
+
+  // EHS PLAN
+  if (/\b(?:ehs|fire|wastewater|solid waste|risk)\s*management plan\b|\bemergency preparedness\b|\beia.{0,10}report\b|submission of.*\behs plan\b/i.test(s)) {
+    types.push('EHS Plan');
+  }
+
+  // BASELINE SCHEDULE
+  if (/\bbaseline.*(?:schedule|programme)\b|\bdetailed.*schedule\b|\bl[23].?schedule\b/i.test(s) &&
+      !/\bmonthly progress\b|\bconstruction scheme\b/i.test(s)) {
+    types.push('Baseline Schedule');
+  }
+
+  // PERSONNEL
+  if (/\bkey personnel\b|\breplacement of.{0,25}(?:project manager|tunnel works|deputy project)\b|\bnomination.{0,25}(?:interface manager|focal)\b|\bsenior interface manager\b|\bfocal person.{0,25}management\b|\bplanning engineer\b.*\bappointment\b/i.test(s)) {
+    types.push('Personnel');
+  }
+
+  return [...new Set(types)];
+}
+
+function hasGlobalFilter(){return ST.activeTags.length>0||ST.activeDocTypes.length>0||ST.activeLocations.length>0||ST.activeDepts.length>0||!!ST.search.trim()||!!ST.pendingFilter;}
+
+// ── Count cache — single-pass tag/dt/loc counts, invalidated on data change ──
+let _countCache=null;
+function _getCountCache(){
+  if(_countCache)return _countCache;
+  const tags={},dts={},locs={},depts={};
+  ST.letters.forEach(l=>{
+    (l.tags||[]).forEach(t=>{tags[t]=(tags[t]||0)+1;});
+    (l.docTypes||[]).forEach(t=>{dts[t]=(dts[t]||0)+1;});
+    (l.locations||[]).forEach(t=>{locs[t]=(locs[t]||0)+1;});
+    if(l.department){l.department.split("/").map(s=>s.trim()).filter(Boolean).forEach(d=>{depts[d]=(depts[d]||0)+1;});}
+  });
+  _countCache={tags,dts,locs,depts};
+  return _countCache;
+}
+function _invalidateCache(){_countCache=null;}
+
+// ── Pending status helpers ────────────────────────────────────────────────────
+// A letter is "pending" when it's incoming, explicitly marked pending, and has no reply yet.
+// sinoReplies populated = auto-resolved. pendingStatus='cleared' = manually resolved.
+function isPending(l){
+  return (l.category==='incoming'||l.category==='outgoing')
+    && l.pendingStatus==='pending'
+    && (l.sinoReplies||[]).length===0
+    && (l.engineerReplies||[]).length===0;
+}
+
+function pendingDisplayHTML(l){
+  if(l.category!=='incoming'&&l.category!=='outgoing') return '<span style="color:#cbd5e1">—</span>';
+  // Auto-resolved by direct reply fields
+  const replyRef=(l.sinoReplies||[])[0]||(l.engineerReplies||[])[0]||'';
+  const shortRef=replyRef?replyRef.split('/').pop():'';
+  if((l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0){
+    return `<span class="pending-badge is-replied" title="${esc(replyRef)}">✓ Replied${shortRef?' (#'+esc(shortRef)+')':''}</span>`;
+  }
+  const ps=l.pendingStatus||'';
+  // Auto-resolved via outgoing letter's Engineer's Ref (no rollback)
+  if(ps==='replied'){
+    return `<span class="pending-badge is-replied">✓ Replied</span>`;
+  }
+  if(ps==='pending'){
+    return `<span class="pending-badge is-pending">⏳ Pending</span>`+
+      (CAN_EDIT?` <button onclick="openPendingEdit('${l.id}');event.stopPropagation()" title="Change status" `+
+      `style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:12px;padding:0 2px">✏</button>`:"");
+  }
+  if(ps==='cleared'){
+    return `<span class="pending-badge is-cleared">— Not Required</span>`+
+      (CAN_EDIT?` <button onclick="setPendingStatus('${l.id}','pending');event.stopPropagation()" title="Restore pending" `+
+      `style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;padding:0 2px">↩</button>`:"");
+  }
+  // Not tracked (old letter, no pendingStatus set)
+  if(!CAN_EDIT)return "";
+  return `<button onclick="setPendingStatus('${l.id}','pending');event.stopPropagation()" `+
+    `style="background:#f8fafc;border:1px dashed #cbd5e1;color:#94a3b8;border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer">+ Track</button>`;
+}
+
+function openPendingEdit(id){
+  const cell=document.getElementById('ps-cell-'+id);
+  if(!cell)return;
+  const l=ST.letters.find(x=>x.id===id);
+  if(!l)return;
+  cell.innerHTML=`<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+    <select id="ps-sel-${id}"
+      style="padding:3px 6px;border-radius:5px;border:1px solid #cbd5e1;font-size:11px;background:white;color:#0f172a">
+      <option value="pending"${l.pendingStatus==='pending'?' selected':''}>⏳ Pending Reply</option>
+      <option value="cleared"${l.pendingStatus==='cleared'?' selected':''}>— No Response Needed</option>
+    </select>
+    <button onclick="savePendingEdit('${id}')" style="background:#047857;color:white;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer">✓</button>
+    <button onclick="cancelPendingEdit('${id}')" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer">✕</button>
+  </div>`;
+}
+
+function savePendingEdit(id){
+  setPendingStatus(id, document.getElementById('ps-sel-'+id)?.value||'pending');
+}
+function cancelPendingEdit(id){
+  const cell=document.getElementById('ps-cell-'+id);
+  const l=ST.letters.find(x=>x.id===id);
+  if(cell&&l) cell.innerHTML=pendingDisplayHTML(l);
+}
+function setPendingStatus(id, val){
+  const l=ST.letters.find(x=>x.id===id);
+  if(!l)return;
+  l.pendingStatus=val;
+  persist();
+  const cell=document.getElementById('ps-cell-'+id);
+  if(cell) cell.innerHTML=pendingDisplayHTML(l);
+}
+
+function setRespFilter(val){
+  ST.pendingFilter=val;
+  if(val&&ST.tab!=='__all__') ST.tab='__all__';
+  ST.page=0;render();
+}
+
+// Auto-initialise pending status for the latest N incoming AND outgoing letters
+function initPendingForLatest(letters, n=20){
+  // Step 1: mark as replied when sinoReplies or engineerReplies are populated
+  letters.forEach(l=>{
+    if((l.category!=='incoming'&&l.category!=='outgoing')||l.pendingStatus!=='pending') return;
+    const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
+    if(hasReply) l.pendingStatus='replied';
+  });
+
+  // Step 2: for each tracked category, auto-set pending for latest N unreplied letters
+  ['incoming','outgoing'].forEach(cat=>{
+    const catLetters=letters
+      .filter(l=>l.category===cat)
+      .sort((a,b)=>new Date(b.sendDate||0)-new Date(a.sendDate||0));
+    let count=0;
+    for(const l of catLetters){
+      const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
+      if(hasReply) continue;
+      if(count<n){
+        if(!l.pendingStatus) l.pendingStatus='pending';
+        count++;
+      } else {
+        if(l.pendingStatus==='pending') l.pendingStatus='';
+      }
+    }
+  });
+}
+
+function matches(l){
+  if(ST.activeTags.length>0){
+    const lt=l.tags||[];
+    const ok=ST.tagMode==="AND"?ST.activeTags.every(t=>lt.includes(t)):ST.activeTags.some(t=>lt.includes(t));
+    if(!ok)return false;
+  }
+  if(ST.activeDocTypes.length>0){
+    const ld=l.docTypes||[];
+    const ok=ST.dtMode==="AND"?ST.activeDocTypes.every(t=>ld.includes(t)):ST.activeDocTypes.some(t=>ld.includes(t));
+    if(!ok)return false;
+  }
+  if(ST.activeLocations.length>0){
+    const ll=l.locations||[];
+    const ok=ST.locMode==="AND"?ST.activeLocations.every(t=>ll.includes(t)):ST.activeLocations.some(t=>ll.includes(t));
+    if(!ok)return false;
+  }
+  if(ST.activeDepts.length>0){
+    const parts=(l.department||"").split("/").map(s=>s.trim()).filter(Boolean);
+    if(!ST.activeDepts.some(d=>parts.includes(d)))return false;
+  }
+  if(ST.pendingFilter==='pending'){
+    if(!isPending(l)) return false;
+  }
+  if(ST.search.trim()){
+    const q=ST.search.toLowerCase();
+    return(l.letterNumber||"").toLowerCase().includes(q)||(l.subject||"").toLowerCase().includes(q)||
+      (l.employerRefs||[]).some(r=>r.toLowerCase().includes(q))||(l.engineerRefs||[]).some(r=>r.toLowerCase().includes(q))||
+      (l.sinohydroRefs||[]).some(r=>r.toLowerCase().includes(q))||(l.tags||[]).some(t=>t.toLowerCase().includes(q))||
+      (l.docTypes||[]).some(t=>t.toLowerCase().includes(q))||(l.locations||[]).some(t=>t.toLowerCase().includes(q))||
+      (l.department||"").toLowerCase().includes(q)||(l.remarks||"").toLowerCase().includes(q)||
+      (l.cc||"").toLowerCase().includes(q);
+  }
+  return true;
+}
+
+function matchesInTab(l){return l.category===ST.tab&&matches(l);}
+
+// ══ STORAGE ══════════════════════════════════════════════════════════════════
+// ═══ SERVER-BACKED STORAGE (Vercel → Nutstore over WebDAV) ═══════════════════
+// GET /api/letters loads (server-filtered by the caller's department roles);
+// POST /api/letters (admin only) saves. No local file, no localStorage cache —
+// the server is the single source of truth.
+// ════════════════════════════════════════════════════════════════════════════
+
+let CAN_EDIT   = false;  // set from the GET response; gates all mutation UI
+let _loaded    = false;  // becomes true after the first successful load
+let _saveTimer = null;   // debounce timer
+let _unsaved   = false;  // track unsaved changes
+
+// ── Data helpers ────────────────────────────────────────────────────────────
+function getData(){
+  return{letters:ST.letters,allTags:ST.allTags,allDocTypes:ST.allDocTypes,
+    allLocations:ST.allLocations,allDepts:ST.allDepts,savedAt:new Date().toISOString(),version:"2.1"};
+}
+function applyData(d){
+  if(!d)return;
+  ST.letters=d.letters||[];
+  if(d.allTags?.length)     ST.allTags=d.allTags;
+  if(d.allDocTypes?.length) ST.allDocTypes=d.allDocTypes;
+  if(d.allLocations?.length)ST.allLocations=d.allLocations;
+  if(d.allDepts?.length)    ST.allDepts=d.allDepts;
+  initPendingForLatest(ST.letters, 20);
+  _invalidateCache();
+}
+
+// ── Status panel ────────────────────────────────────────────────────────────
+function setSP(state){
+  const dot=document.getElementById("sp-dot");
+  const lbl=document.getElementById("sp-label");
+  const saveBtn=document.getElementById("sp-save-btn");
+  const retryBtn=document.getElementById("sp-retry-btn");
+  if(state==="connected"){
+    dot.style.background="#10b981"; lbl.style.color="#10b981";
+    lbl.textContent=CAN_EDIT?"✅ Connected":"✅ Connected (view only)";
+    if(saveBtn)saveBtn.style.display=CAN_EDIT?"block":"none";
+    if(retryBtn)retryBtn.style.display="none";
+  }else if(state==="saving"){
+    dot.style.background="#f59e0b"; lbl.style.color="#f59e0b";
+    lbl.textContent="💾 Saving…";
+  }else if(state==="saved"){
+    dot.style.background="#10b981"; lbl.style.color="#10b981";
+    lbl.textContent="✅ Auto-saved";
+    flashSave(); setTimeout(()=>setSP("connected"),2000);
+  }else if(state==="error"){
+    dot.style.background="#ef4444"; lbl.style.color="#ef4444";
+    lbl.textContent="✗ Save error — check connection, then Save Now";
+  }else{ // load-error
+    dot.style.background="#ef4444"; lbl.style.color="#ef4444";
+    lbl.textContent="✗ Couldn't load data";
+    if(saveBtn)saveBtn.style.display="none";
+    if(retryBtn)retryBtn.style.display="block";
+  }
+}
+function flashSave(){
+  const el=document.getElementById("save-flash");
+  if(!el)return;
+  el.style.opacity="1";
+  setTimeout(()=>{ el.style.opacity="0"; },2000);
+}
+
+// ── Save to server (admin only; debounced 800ms after the last edit) ─────────
+async function _writeFile(){
+  if(!CAN_EDIT||!_loaded)return false;
+  try{
+    setSP("saving");
+    const res=await fetch("/api/letters",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(getData())});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    setSP("saved");
+    _unsaved=false;
+    return true;
+  }catch(e){
+    setSP("error"); console.error("Save failed:",e);
+    return false;
+  }
+}
+function persist(){
+  if(!CAN_EDIT||!_loaded)return; // view-only users never write; server also 403s this
+  _unsaved=true;
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>_writeFile(),800);
+}
+async function saveNow(){
+  clearTimeout(_saveTimer);
+  await _writeFile();
+}
+
+// ── Load from the server ──────────────────────────────────────────────────────
+async function loadFromServer(){
+  setSP("loading");
+  try{
+    const res=await fetch("/api/letters");
+    if(res.status===401){ location.href="index.html"; return; } // not signed in — go to login
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const json=await res.json();
+    CAN_EDIT=!!json.canEdit;
+    document.getElementById("addbtn").style.display=CAN_EDIT?"":"none";
+    document.getElementById("importbtn").style.display=CAN_EDIT?"":"none";
+    // Admins (canEdit) can manage users; everyone sees who they're signed in as.
+    document.getElementById("sp-admin-btn").style.display=CAN_EDIT?"block":"none";
+    setWhoami(json);
+    applyData(json);
+    _loaded=true;
+    setSP("connected");
+    render();
+  }catch(e){
+    console.error("Load failed:",e);
+    setSP("load-error");
+  }
+}
+
+// Show the signed-in identity + (for department viewers) their scope.
+function setWhoami(json){
+  const el=document.getElementById("sp-whoami");
+  if(!el)return;
+  if(CAN_EDIT){ el.innerHTML="<b>Admin</b> · full access"; return; }
+  const depts=(json.viewerDepartments||[]).filter(Boolean);
+  el.innerHTML=depts.length
+    ? "<b>View only</b> · "+depts.map(esc).join(", ")
+    : "<b>View only</b> · all departments";
+}
+
+async function logout(){
+  try{ await fetch("/api/logout",{method:"POST"}); }catch(e){ /* ignore */ }
+  location.href="index.html";
+}
+
+// ── Startup ────────────────────────────────────────────────────────────────
+async function autoConnect(){
+  await loadFromServer();
+}
+
+// Warn before closing if unsaved changes
+window.addEventListener("beforeunload",e=>{
+  if(_unsaved){ e.preventDefault(); e.returnValue=""; }
+});
+
+// ══ ACTIONS ══════════════════════════════════════════════════════════════════
+function addL(f){ST.letters.push({...f,id:Date.now()+"_"+Math.random().toString(36).slice(2,7),createdAt:Date.now()});initPendingForLatest(ST.letters,20);_invalidateCache();persist();render();}
+function editL(id,f){ST.letters=ST.letters.map(l=>l.id===id?{...l,...f}:l);initPendingForLatest(ST.letters,20);_invalidateCache();persist();render();}
+function delL(id){ST.letters=ST.letters.filter(l=>l.id!==id);_invalidateCache();persist();closeM();render();}
+
+function setTab(id){
+  ST.tab=id;ST.searchActive=false;ST.search="";ST.page=0;
+  document.getElementById("sinp").value="";
+  document.getElementById("searchbtns").style.display="none";
+  render();
+}
+let _srchDebounce=null;
+function onSrch(v){
+  ST.search=v;if(!v)ST.searchActive=false;
+  document.getElementById("searchbtns").style.display=v?"flex":"none";
+  renderSidebar();renderTopbar(); // instant badge update
+  clearTimeout(_srchDebounce);
+  _srchDebounce=setTimeout(()=>{ST.page=0;renderContent();setTimeout(fixTableHeight,30);},200);
+}
+function doSearch(){if(ST.search.trim())ST.searchActive=true;render();}
+function clearSearch(){ST.search="";ST.searchActive=false;document.getElementById("sinp").value="";document.getElementById("searchbtns").style.display="none";render();}
+
+function toggleF(type,val){
+  const k={tags:"activeTags",dt:"activeDocTypes",loc:"activeLocations",dept:"activeDepts"}[type];
+  const i=ST[k].indexOf(val);if(i>=0)ST[k].splice(i,1);else ST[k].push(val);
+  ST.page=0;render();
+}
+function setMode(type,m){const k={tags:"tagMode",dt:"dtMode",loc:"locMode"}[type];ST[k]=m;ST.page=0;renderSidebar();renderContent();}
+function clearF(type){const k={tags:"activeTags",dt:"activeDocTypes",loc:"activeLocations",dept:"activeDepts"}[type];ST[k]=[];ST.page=0;render();}
+function clearAllFilters(){ST.activeTags=[];ST.activeDocTypes=[];ST.activeLocations=[];ST.activeDepts=[];ST.searchActive=false;ST.search="";document.getElementById("sinp").value="";ST.page=0;render();}
+function toggleSec(k){ST.collapsed[k]=!ST.collapsed[k];renderSidebar();}
+function toggleFbSec(k){ST.collapsed['fb_'+k]=!ST.collapsed['fb_'+k];renderFilterBar();}
+
+function setSort(f){if(ST.sort.f===f)ST.sort.d=ST.sort.d==="asc"?"desc":"asc";else{ST.sort.f=f;ST.sort.d="desc";}ST.page=0;renderContent();setTimeout(fixTableHeight,30);}
+function goPage(p){ST.page=p;renderContent();setTimeout(fixTableHeight,30);document.getElementById("content").scrollTop=0;}
+function openAdd(){renderForm(null);}
+function openEdit(id){renderForm(ST.letters.find(l=>l.id===id));}
+function openDet(id){_prevChainId=null;renderDetail(ST.letters.find(l=>l.id===id));}
+function openDetFromChain(chainId,letterId){_prevChainId=chainId;closeM();renderDetail(ST.letters.find(l=>l.id===letterId));}
+function closeM(){document.getElementById("mroot").innerHTML="";}
+function confirmDel(id){
+  document.getElementById("mroot").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeM()"><div class="modal confirm-wrap">
+    <div style="font-size:34px;margin-bottom:8px">🗑️</div><h2 style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:5px">Delete Letter?</h2>
+    <p style="font-size:13px;color:#64748b;margin-bottom:18px">This cannot be undone.</p>
+    <div style="display:flex;gap:9px;justify-content:center"><button class="btn-out" onclick="closeM()">Cancel</button>
+    <button class="btn-danger" onclick="delL('${id}')">Delete</button></div></div></div>`;
+}
+
+function exportCSV(){
+  // Export current tab only (so user gets clean per-category file for adding links)
+  const isAll = ST.tab==="__all__";
+  const rows = (isAll
+    ? [...ST.letters]
+    : ST.letters.filter(l=>l.category===ST.tab)
+  ).sort((a,b)=>new Date(a.sendDate||0)-new Date(b.sendDate||0));
+  const e=v=>'"'+String(v||"").replace(/"/g,'""')+'"';
+  const h=[
+    "S.No","Category","Send Date","Hard Copy Date","Letter No.",
+    "Employer's Ref.","Engineer Ref.","Sinohydro Ref.",
+    "Reply Ref.","Engineer's Reply","Sinohydro's Reply",
+    "Subject","Doc Types","Locations","Department","Status",
+    "Tags","Remarks","Attachment","CC","Send To",
+    "Letter URL (Paste Nutstore Link Here)",
+    "Attachment URLs (Format: Name1::URL1 | Name2::URL2)"
+  ];
+  const csv=[h.map(e).join(","),...rows.map((l,i)=>[
+    i+1,
+    catOf(l.category).label,
+    l.sendDate||"",
+    l.hardCopyDate||"",
+    l.letterNumber||"",
+    (l.employerRefs||[]).join(" | "),
+    (l.engineerRefs||[]).join(" | "),
+    (l.sinohydroRefs||[]).join(" | "),
+    (l.replyRefs||[]).join(" | "),
+    (l.engineerReplies||[]).join(" | "),
+    (l.sinoReplies||[]).join(" | "),
+    l.subject||"",
+    (l.docTypes||[]).join(" | "),
+    (l.locations||[]).join(" | "),
+    l.department||"",
+    l.status||"",
+    (l.tags||[]).join(" | "),
+    l.remarks||"",
+    l.attachment||"",
+    l.cc||"",
+    l.sendTo||"",
+    l.letterUrl||"",
+    (l.attachments||[]).map(a=>`${a.name||""  }::${a.url||""}`).filter(s=>s!="::").join(" | ")
+  ].map(e).join(","))].join("\n");
+  const a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
+  const tabLabel = isAll ? "All" : catOf(ST.tab).short.replace(/[^a-zA-Z0-9]/g,"_");
+  a.download="Letters_"+tabLabel+"_"+new Date().toISOString().slice(0,10)+".csv";a.click();
+}
+
+// ══ RENDER SIDEBAR ════════════════════════════════════════════════════════════
+function renderSidebar(){
+  document.getElementById("lcount").textContent=ST.letters.length+" total letters";
+  // Update export button label to show what will be exported
+  const btn=document.getElementById("sp-export-csv-btn");
+  if(btn){
+    const isAll=ST.tab==="__all__";
+    const count=isAll?ST.letters.length:ST.letters.filter(l=>l.category===ST.tab).length;
+    const label=isAll?"All":catOf(ST.tab).short;
+    btn.textContent=`⬆ Export ${label} CSV (${count})`;
+  }
+
+  // Filter section renderer
+  function renderFSec(type,key,activeKey,modeKey){
+    const cc=_getCountCache();
+    const cntMap={tags:cc.tags,dt:cc.dts,loc:cc.locs,dept:cc.depts}[type];
+    const lkField={tags:"tags",dt:"docTypes",loc:"locations",dept:"department"}[type];
+    const allVals=[...new Set([...ST[key],...Object.keys(cntMap)])].sort();
+    const used=allVals.filter(v=>(cntMap[v]||0)>0);
+    const pills=document.getElementById(type+"-pills");
+    if(pills){
+      pills.innerHTML="";
+      used.forEach(v=>{
+        const cnt=cntMap[v]||0;
+        const active=ST[activeKey].includes(v);const color=tc(v);
+        const b=document.createElement("button");b.className="fpill"+(active?" active":"");
+        b.textContent=v+" "+cnt;b.style.borderColor=active?color:color+"44";b.style.color=active?color:"#64748b";b.style.background=active?color+"22":"transparent";
+        b.onclick=(e)=>{e.stopPropagation();toggleF(type,v);};pills.appendChild(b);
+      });
+      if(!used.length)pills.innerHTML='<span style="font-size:10px;color:#334155;font-style:italic">None used yet</span>';
+    }
+    const modeEl=document.getElementById(type+"-mode");
+    if(modeEl)modeEl.style.display=ST[activeKey].length>1?"flex":"none";
+    const andBtn=document.getElementById(type+"-and"),orBtn=document.getElementById(type+"-or");
+    if(andBtn){andBtn.style.background=ST[modeKey]==="AND"?"#2563eb":"#1e293b";andBtn.style.color=ST[modeKey]==="AND"?"white":"#64748b";}
+    if(orBtn){orBtn.style.background=ST[modeKey]==="OR"?"#2563eb":"#1e293b";orBtn.style.color=ST[modeKey]==="OR"?"white":"#64748b";}
+    const clr=document.getElementById(type+"-clear");if(clr)clr.style.display=ST[activeKey].length?"block":"none";
+    const body=document.getElementById(type+"-body");if(body)body.style.display=ST.collapsed[type==="dt"?"dt":type]?"none":"block";
+    const arrow=document.getElementById(type+"-arrow");if(arrow)arrow.textContent=ST.collapsed[type==="dt"?"dt":type]?"▶":"▼";
+  }
+  renderFilterBar();
+
+  // All letters badge
+  const allCount=ST.letters.filter(l=>matches(l)).length;
+  document.getElementById("allbadge").textContent=allCount;
+  const allBtn=document.getElementById("allbtn");
+  allBtn.className=ST.tab==="__all__"?"active":"";
+
+  // Category nav
+  const nav=document.getElementById("nav");nav.innerHTML="";
+  CATS.forEach(cat=>{
+    const total=ST.letters.filter(l=>l.category===cat.id).length;
+    const vis=ST.letters.filter(l=>l.category===cat.id&&matches(l)).length;
+    const active=ST.tab===cat.id;
+    const hasF=hasGlobalFilter();
+    const badge=hasF&&vis!==total?vis+"/"+total:total;
+    const b=document.createElement("button");b.className="navbtn"+(active?" active":"");
+    b.style.borderLeftColor=active?cat.color:"transparent";b.style.color=active?cat.color:"#94a3b8";
+    b.innerHTML=`<span class="nicon">${cat.icon}</span><span class="nlabel">${cat.label}</span><span class="nbadge" style="background:${active?cat.color+"33":"#1e293b"};color:${active?cat.color:"#475569"}">${badge}</span>`;
+    b.onclick=()=>setTab(cat.id);nav.appendChild(b);
+  });
+}
+
+// ══ COMPACT FILTER BAR ═══════════════════════════════════════════════════════
+function renderFilterBar(){
+  const fb=document.getElementById("filter-bar");
+  if(!fb)return;
+  const cc=_getCountCache();
+  const pc=ST.pendingFilter;
+
+  function pillRow(type,label,vals,activeArr,cntMap){
+    if(!vals.length)return"";
+    const collapsed=ST.collapsed['fb_'+type];
+    const pills=vals.map(v=>{
+      const active=activeArr.includes(v);
+      const color=tc(v);
+      const cnt=(cntMap&&cntMap[v])||0;
+      return `<button class="fpill${active?" active":""}"
+        style="font-size:10px;padding:2px 7px;border-color:${active?color:color+"44"};color:${active?color:"#64748b"};background:${active?color+"22":"transparent"}"
+        onclick="toggleF('${type}','${esc(v)}')">${esc(v)}${cnt?" <span style='opacity:.6'>"+cnt+"</span>":""}</button>`;
+    }).join("");
+    const clearBtn=activeArr.length?`<button class="clearf" style="display:inline-block;margin-top:4px" onclick="clearF('${type}')">✕ Clear</button>`:"";
+    const activeBadge=activeArr.length?`<span style="background:#2563eb;color:white;border-radius:8px;padding:0 5px;font-size:9px;margin-left:4px">${activeArr.length}</span>`:"";
+    return `<div style="border-bottom:1px solid #1e293b">
+      <div onclick="toggleFbSec('${type}')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;cursor:pointer;user-select:none;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">
+        <span>${label}${activeBadge}</span>
+        <span style="font-size:9px;color:#475569">${collapsed?"▶":"▼"}</span>
+      </div>
+      ${collapsed?"":`<div style="padding:0 8px 8px"><div class="cfb-pills">${pills}</div>${clearBtn}</div>`}
+    </div>`;
+  }
+
+  let html="";
+
+  // Department — always show all DEF_DEPTS regardless of count
+  html+=pillRow("dept","🏢 Dept",DEF_DEPTS,ST.activeDepts,cc.depts);
+
+  // Doc Type — only show those with letters
+  const usedDTs=DEF_DOCTYPES.filter(v=>(cc.dts[v]||0)>0);
+  html+=pillRow("dt","📄 Doc Type",usedDTs,ST.activeDocTypes,cc.dts);
+
+  // Location — only show those with letters
+  const usedLocs=DEF_LOCS.filter(v=>(cc.locs[v]||0)>0);
+  if(usedLocs.length) html+=pillRow("loc","📍 Location",usedLocs,ST.activeLocations,cc.locs);
+
+  // Tags — only show those with letters
+  const usedTags=STAGS.filter(v=>(cc.tags[v]||0)>0);
+  if(usedTags.length) html+=pillRow("tags","🏷️ Tags",usedTags,ST.activeTags,cc.tags);
+
+  // Pending
+  const pendingCount=ST.letters.filter(l=>isPending(l)).length;
+  const pendingCollapsed=ST.collapsed.fb_pending;
+  const pendingActiveBadge=pc?`<span style="background:#2563eb;color:white;border-radius:8px;padding:0 5px;font-size:9px;margin-left:4px">1</span>`:"";
+  html+=`<div style="border-bottom:1px solid #1e293b">
+    <div onclick="toggleFbSec('pending')" style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;cursor:pointer;user-select:none;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">
+      <span>⏳ Pending${pendingActiveBadge}</span>
+      <span style="font-size:9px;color:#475569">${pendingCollapsed?"▶":"▼"}</span>
+    </div>
+    ${pendingCollapsed?"":`<div style="padding:0 8px 8px"><div class="cfb-pills">
+      <button class="fpill${pc==="pending"?" active":""}"
+        style="font-size:10px;padding:2px 7px;${pc==="pending"?"border-color:#b45309;color:#b45309;background:#fef3c722":"border-color:#33415544;color:#64748b"}"
+        onclick="setRespFilter(${pc==="pending"?'null':"'pending'"})">
+        ⏳ Pending${pendingCount?" <span style='opacity:.6'>"+pendingCount+"</span>":""}
+      </button>
+    </div>${pc?`<button class="clearf" style="display:inline-block;margin-top:4px" onclick="setRespFilter(null)">✕ Clear</button>`:""}</div>`}
+  </div>`;
+
+  // Clear all (when any filter active)
+  const hasAny=ST.activeDocTypes.length||ST.activeDepts.length||ST.activeLocations.length||ST.activeTags.length||pc;
+  if(hasAny) html+=`<button class="clearf" style="display:block;color:#ef4444;margin-top:4px;font-weight:600" onclick="clearAllFilters()">✕ Clear all filters</button>`;
+
+  fb.innerHTML=html;
+
+  // Collapsed state for the Filters section
+  const fbody=document.getElementById("filters-body");
+  const farrow=document.getElementById("filters-arrow");
+  if(fbody) fbody.style.display=ST.collapsed.filters?"none":"block";
+  if(farrow) farrow.textContent=ST.collapsed.filters?"▶":"▼";
+
+  // Badge count
+  const badge=document.getElementById("filter-count-badge");
+  if(badge){
+    const n=ST.activeDocTypes.length+ST.activeDepts.length+ST.activeLocations.length+ST.activeTags.length+(pc?1:0);
+    badge.textContent=n+" active";
+    badge.style.display=n>0?"inline":"none";
+  }
+}
+
+// ══ RENDER TOPBAR ════════════════════════════════════════════════════════════
+function renderTopbar(){
+  const isAll=ST.tab==="__all__";
+  const cat=isAll?null:catOf(ST.tab);
+  const allF=[...ST.activeTags,...ST.activeDocTypes,...ST.activeLocations,...ST.activeDepts];
+  if(isAll){
+    document.getElementById("ttitle").textContent="All Letters";
+    const hits=ST.letters.filter(l=>matches(l)).length;
+    let s=hits+" letter"+(hits!==1?"s":"");
+    if(allF.length)s+=` <span class="filterbadge" style="background:#fef3c7;color:#92400e">🔍 ${allF.length} filter${allF.length>1?"s":""} active</span>`;
+    if(allF.length||ST.searchActive)s+=` <button class="clearall-btn" onclick="clearAllFilters()">✕ Clear all</button>`;
+    document.getElementById("topsub").innerHTML=s;
+  } else {
+    document.getElementById("ttitle").textContent=cat.label;
+    const total=ST.letters.filter(l=>l.category===ST.tab).length;
+    const vis=ST.letters.filter(l=>l.category===ST.tab&&matches(l)).length;
+    let s=vis+" of "+total+" letters";
+    if(allF.length)s+=` <span class="filterbadge" style="background:#fef3c7;color:#92400e">🔍 ${allF.length} filter${allF.length>1?"s":""} active</span>`;
+    if(allF.length||ST.searchActive)s+=` <button class="clearall-btn" onclick="clearAllFilters()">✕ Clear all</button>`;
+    document.getElementById("topsub").innerHTML=s;
+  }
+  // data date — latest AD sendDate (ISO YYYY-MM-DD with year 2000-2099)
+  const ddEl=document.getElementById("data-date-val");
+  if(ddEl){
+    const adDates=ST.letters.map(l=>l.sendDate).filter(d=>{if(!d)return false;const m=/^(\d{4})-\d\d-\d\d$/.exec((d||'').trim());return m&&parseInt(m[1])>=2020&&parseInt(m[1])<=2050;}).sort();
+    ddEl.textContent=adDates.length?fmtD(adDates[adDates.length-1]):"—";
+  }
+  // sync lock button + edit controls
+  const eb=document.getElementById("edit-btns");
+  const lb=document.getElementById("lockbtn");
+  if(_editMode){
+    eb.style.display="flex";
+    lb.textContent="🔓 Editing";
+    lb.title="Click to lock (return to read-only)";
+    lb.style.color="#4ade80";lb.style.borderColor="#22c55e";
+  } else {
+    eb.style.display="none";
+    lb.textContent="🔒 Locked";
+    lb.title="Read-only mode — click to unlock";
+    lb.style.color="#fbbf24";lb.style.borderColor="#f59e0b";
+  }
+}
+
+// ══ RENDER TABLE ══════════════════════════════════════════════════════════════
+function renderContent(){
+  const content=document.getElementById("content");
+  const isAll=ST.tab==="__all__";
+  let rows=isAll
+    ?ST.letters.filter(l=>matches(l))
+    :ST.letters.filter(l=>l.category===ST.tab&&matches(l));
+
+  // Build a sort key for letter numbers that ignores sub-category segments (e.g. "Interface")
+  // by using: <first-two-parts>/<trailing-number-zero-padded>
+  function lnKey(ln){
+    const parts=(ln||'').split('/');
+    let num=0;
+    for(let i=parts.length-1;i>=0;i--){if(/^\d+$/.test(parts[i])){num=parseInt(parts[i],10);break;}}
+    return parts.slice(0,2).join('/').toLowerCase()+'/'+String(num).padStart(8,'0');
+  }
+  rows.sort((a,b)=>{
+    if(ST.sort.f==="sendDate"||ST.sort.f==="hardCopyDate"){
+      const noDate=ST.sort.d==="desc"?new Date(0):new Date(9999,0,1);
+      const[ad,bd]=[a,b].map(x=>x[ST.sort.f]?new Date(x[ST.sort.f]):noDate);
+      return ST.sort.d==="desc"?bd-ad:ad-bd;
+    }
+    if(ST.sort.f==="letterNumber"){
+      const[ak,bk]=[a,b].map(x=>lnKey(x.letterNumber));
+      const cmp=ak.localeCompare(bk,undefined,{numeric:true,sensitivity:'base'});
+      return ST.sort.d==="desc"?-cmp:cmp;
+    }
+    const[av,bv]=[a,b].map(x=>x[ST.sort.f]||"");
+    const cmp=av.localeCompare(bv,undefined,{numeric:true,sensitivity:'base'});
+    return ST.sort.d==="desc"?-cmp:cmp;
+  });
+
+  if(!rows.length){
+    const cat=isAll?{icon:"🔎"}:catOf(ST.tab);
+    content.innerHTML=`<div class="empty-state"><div style="font-size:44px">${cat.icon}</div>
+      <div style="font-size:14px;font-weight:700;color:#64748b">No letters match current filters</div>
+      <div style="font-size:12px">Try adjusting filters or add a new letter</div></div>`;return;
+  }
+
+  // Pagination
+  const totalRows=rows.length;
+  const totalPages=Math.ceil(totalRows/ST.pageSize);
+  if(ST.page>=totalPages)ST.page=Math.max(0,totalPages-1);
+  const pageStart=ST.page*ST.pageSize;
+  const pageRows=rows.slice(pageStart,pageStart+ST.pageSize);
+
+  const si=f=>ST.sort.f===f?`<span style="margin-left:2px;color:#2563eb">${ST.sort.d==="asc"?"↑":"↓"}</span>`:"";
+  const tblW=(isAll?75:0)+32+88+195+330+95+160+145+155+200+72+210;
+  let html=`<div class="ltable-wrap"><div class="ltable-scroll"><table style="width:${tblW}px;table-layout:fixed"><thead><tr>
+    <th style="width:32px;text-align:center">#</th>
+    ${isAll?`<th style="width:75px">Category</th>`:""}
+    <th style="width:88px" onclick="setSort('sendDate')">Send Date${si("sendDate")}</th>
+    <th style="width:195px" onclick="setSort('letterNumber')">Letter No.${si("letterNumber")}</th>
+    <th style="width:330px" onclick="setSort('subject')">Subject${si("subject")}</th>
+    <th style="width:95px">Department</th><th style="width:145px">Doc Type</th><th style="width:155px">Location</th><th style="width:200px">Tags</th><th style="width:72px">Status</th><th style="width:160px">Reply Status</th><th style="width:210px"></th>
+  </tr></thead><tbody>`;
+
+  pageRows.forEach((l,i)=>{
+    const globalIdx=pageStart+i;
+    const sc=STATUSES[l.status]||{};
+    const cat=catOf(l.category);
+    if(!l._cleanSubject)l._cleanSubject=cleanTxt(l.subject);
+
+    const dts=(l.docTypes||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('dt','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
+    const locs=(l.locations||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('loc','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
+    const tgs=(l.tags||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('tags','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
+    html+=`<tr><td style="color:#94a3b8;text-align:center">${globalIdx+1}</td>
+      ${isAll?`<td><span class="cat-badge" style="background:${cat.bg};color:${cat.dark}">${cat.icon} ${cat.short}</span></td>`:""}
+      <td style="color:#475569;font-size:11px;overflow:hidden;white-space:nowrap">${fmtD(l.sendDate)}</td>
+      <td style="overflow:hidden"><button class="lno-btn" onclick="openDet('${l.id}')" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(l.letterNumber)}</button>${l.letterUrl?`<span class="lno-link-badge" onclick="event.stopPropagation();window.open('${esc(l.letterUrl)}','_blank')" title="Open letter document">📄</span>`:""}${l.hardCopyDate?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">HC:${fmtD(l.hardCopyDate)}</div>`:""}</td>
+      <td style="overflow:hidden"><div class="subj-cell"><div class="subj-text">${esc(l._cleanSubject)}</div></div></td>
+      <td style="overflow:hidden;font-size:11px;color:#475569">${l.department?`<span style="background:#f1f5f9;border-radius:5px;padding:2px 8px;display:inline-block;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis">${esc(l.department)}</span>`:"—"}</td>
+      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${dts}</div></td>
+      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${locs}</div></td>
+      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${tgs}</div></td>
+      <td style="overflow:hidden;white-space:nowrap">${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg}">${l.status}</span>`:"—"}</td>
+      <td id="ps-cell-${l.id}" style="overflow:hidden">${pendingDisplayHTML(l)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-sm" style="color:#2563eb;border-color:#2563eb" onclick="openDet('${l.id}')">View</button>
+        <button style="background:#e0f2fe;color:#0369a1;border:1px solid #0369a1;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-left:3px;font-weight:700;white-space:nowrap" onclick="openChain('${l.id}')" title="View correspondence chain">🔗 Chain</button>
+        ${(_editMode&&CAN_EDIT)?`<button class="btn-sm" style="color:#64748b;border-color:#64748b;margin-left:3px" onclick="openEdit('${l.id}')">Edit</button>
+        <button class="btn-sm" style="color:#ef4444;border-color:#ef4444;margin-left:3px" onclick="confirmDel('${l.id}')">✕</button>`:""}
+      </td></tr>`;
+  });
+  html+="</tbody></table></div>"; // closes ltable-scroll only
+
+  // Pagination bar — appended inside ltable-wrap, after the scroll container
+  if(totalPages>1){
+    const p=ST.page;
+    const dis=(on)=>on?"opacity:.35;cursor:default":"";
+    html+=`<div class="pg-bar" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;background:white;border-top:1px solid #e2e8f0;border-radius:0 0 14px 14px;flex-wrap:wrap">`;
+    html+=`<button onclick="goPage(0)" ${p===0?"disabled":""} style="padding:4px 9px;border-radius:6px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:12px;color:#64748b;${dis(p===0)}">«</button>`;
+    html+=`<button onclick="goPage(${p-1})" ${p===0?"disabled":""} style="padding:4px 9px;border-radius:6px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:12px;color:#64748b;${dis(p===0)}">‹</button>`;
+    const from=Math.max(0,p-2),to=Math.min(totalPages-1,p+2);
+    for(let i=from;i<=to;i++){
+      html+=`<button onclick="goPage(${i})" style="padding:4px 9px;border-radius:6px;font-size:12px;font-weight:${i===p?700:400};border:${i===p?"2px solid #2563eb":"1px solid #e2e8f0"};background:${i===p?"#eff6ff":"white"};color:${i===p?"#2563eb":"#64748b"};cursor:pointer">${i+1}</button>`;
+    }
+    html+=`<button onclick="goPage(${p+1})" ${p===totalPages-1?"disabled":""} style="padding:4px 9px;border-radius:6px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:12px;color:#64748b;${dis(p===totalPages-1)}">›</button>`;
+    html+=`<button onclick="goPage(${totalPages-1})" ${p===totalPages-1?"disabled":""} style="padding:4px 9px;border-radius:6px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:12px;color:#64748b;${dis(p===totalPages-1)}">»</button>`;
+    html+=`<span style="font-size:11px;color:#94a3b8;margin-left:4px">Page ${p+1} of ${totalPages} · ${totalRows} letters</span>`;
+    html+=`</div>`;
+  }
+
+  html+="</div>"; // closes ltable-wrap
+  content.innerHTML=html;
+}
+
+// ══ DETAIL ════════════════════════════════════════════════════════════════════
+function renderDetail(l){
+  if(!l)return;
+  const _backChainId=_prevChainId; // capture before any resets
+  const cat=catOf(l.category);const sc=STATUSES[l.status]||{};
+  const chips=(arr,type)=>(arr||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)};font-size:12px;padding:3px 11px" onclick="closeM();toggleF('${type}','${esc(t)}')">${esc(t)}</span>`).join("");
+  // clickable ref pill — clicking opens the chain for that ref number
+  const rp=(r,color)=>`<div onclick="openChainFromRef('${esc(r)}')" style="font-family:monospace;font-size:11px;font-weight:700;color:${color};cursor:pointer;padding:2px 0;display:flex;align-items:center;gap:4px">
+    <span style="font-size:9px;opacity:.7">🔗</span>${esc(r)}</div>`;
+  const rb=(label,color,border,items)=>items.length?`<div class="refbox" style="border-color:${border}"><div class="rblabel" style="color:${color}">${label} <span style="font-size:8px;font-weight:400;opacity:.7">(click to view chain)</span></div><div>${items.join("")}</div></div>`:"";
+  const refs=[
+    rb("Employer's Ref.","#6d28d9","#ede9fe",(l.employerRefs||[]).map(r=>rp(r,"#6d28d9"))),
+    rb("Engineer Ref.","#c2410c","#fed7aa",(l.engineerRefs||[]).map(r=>rp(r,"#c2410c"))),
+    rb("Sinohydro Ref.","#0369a1","#bae6fd",(l.sinohydroRefs||[]).map(r=>rp(r,"#0369a1"))),
+    rb("Reply Ref.no.","#0f172a","#e2e8f0",(l.replyRefs||[]).map(r=>rp(r,"#0f172a"))),
+    rb("Engineer's Reply","#047857","#a7f3d0",(l.engineerReplies||[]).map(r=>rp(r,"#047857"))),
+  ].filter(Boolean).join("")||'<div style="color:#94a3b8;font-size:12px">No reference numbers</div>';
+  document.getElementById("mroot").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeM()">
+  <div class="modal" style="max-width:680px">
+    <div class="det-hd" style="background:linear-gradient(135deg,${cat.dark}11,${cat.color}06);flex-shrink:0">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="background:${cat.bg};color:${cat.dark};border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700">${cat.icon} ${cat.label}</span>
+            ${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg}">${l.status}</span>`:""}
+            ${l.department?`<span style="background:#f1f5f9;color:#475569;border-radius:5px;padding:2px 8px;font-size:11px">${esc(l.department)}</span>`:""}
+          </div>
+          <div style="font-size:16px;font-weight:800;font-family:monospace;margin-bottom:2px">
+            ${l.letterUrl
+              ? `<a href="${esc(l.letterUrl)}" target="_blank" rel="noopener"
+                   style="color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:7px;border-bottom:2px solid #93c5fd;padding-bottom:2px;transition:all .15s"
+                   onmouseover="this.style.color='#1d4ed8';this.style.borderBottomColor='#2563eb'"
+                   onmouseout="this.style.color='#2563eb';this.style.borderBottomColor='#93c5fd'">
+                   <span>📄</span>${esc(l.letterNumber)}
+                   <span style="font-size:10px;font-weight:600;background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 6px">Open ↗</span>
+                 </a>`
+              : `<span style="color:#0f172a">${esc(l.letterNumber)}</span>`}
+          </div>
+          <div style="display:flex;gap:12px;margin-top:3px;flex-wrap:wrap">
+            ${l.sendDate?`<span style="font-size:12px;color:#64748b">📅 ${fmtD(l.sendDate)}</span>`:""}
+            ${l.hardCopyDate?`<span style="font-size:12px;color:#64748b">📄 ${fmtD(l.hardCopyDate)}</span>`:""}
+          </div>
+        </div>
+        <button class="mclose" onclick="closeM()">×</button>
+      </div>
+      <div style="margin-top:8px;font-size:14px;color:#334155;line-height:1.5;font-weight:500">${esc(cleanTxt(l.subject))}</div>
+      ${l.cc?`<div style="margin-top:3px;font-size:12px;color:#64748b">CC: ${esc(l.cc)}</div>`:""}
+      ${l.attachment?`<div style="margin-top:2px;font-size:12px;color:#64748b">📎 ${esc(l.attachment)}</div>`:""}
+      ${l.remarks?`<div style="margin-top:2px;font-size:12px;color:#64748b">📝 ${esc(l.remarks)}</div>`:""}
+      ${ (l.attachments||[]).length?`
+      <div style="margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📎 Attachments</div>
+        ${(l.attachments||[]).map(a=>
+          a.url
+            ?`<a href="${esc(a.url)}" target="_blank" rel="noopener" class="att-link"><span class="al-icon">📎</span><span class="al-name">${esc(a.name||'Attachment')}</span><span class="al-ext">Open ↗</span></a>`
+            :`<div class="att-link" style="cursor:default"><span class="al-icon">📎</span><span class="al-name">${esc(a.name||'Attachment')}</span></div>`
+        ).join("")}
+      </div>`:""
+      }
+    </div>
+    <div style="flex:1;overflow-y:auto;min-height:0">
+    ${(l.docTypes||[]).length||(l.locations||[]).length||(l.tags||[]).length?`
+    <div class="det-sec"><h3>Document Type / Location / Tags <span style="font-size:9px;font-weight:400">(click to filter)</span></h3>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${chips(l.docTypes,"dt")}${chips(l.locations,"loc")}${chips(l.tags,"tags")}
+      </div>
+    </div>`:""}
+    <div class="det-sec"><h3>Reference Numbers</h3><div class="refboxes">${refs}</div></div>
+    </div>
+    <div class="det-ft" style="flex-shrink:0">
+      ${(_editMode&&CAN_EDIT)?`<button class="btn-danger" onclick="confirmDel('${l.id}')">🗑 Delete</button>`:`<div></div>`}
+      <div style="display:flex;gap:8px">
+        ${_backChainId?`<button class="btn-out" style="color:#0369a1;border-color:#93c5fd" onclick="_prevChainId=null;openChain('${esc(_backChainId)}')">← Back to Chain</button>`:""}
+        <button class="btn-out" onclick="closeM()">Close</button>
+        <button style="background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openChain('${l.id}')">🔗 View Chain</button>
+        ${l.letterUrl?`<button style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openPdfPreview('${l.id}','${esc(l.letterUrl)}','${esc(l.letterNumber)}','${_backChainId||''}')">📄 Preview</button>`:""}
+        ${(_editMode&&CAN_EDIT)?`<button class="btn-primary" onclick="closeM();openEdit('${l.id}')">✏ Edit</button>`:""}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function backFromPdf(letterId, chainId){
+  _prevChainId=chainId||null;
+  renderDetail(ST.letters.find(l=>l.id===letterId));
+}
+function openPdfPreview(letterId, url, letterNum, chainId){
+  document.getElementById("mroot").innerHTML=`<div class="overlay" onclick="if(event.target===this)backFromPdf('${letterId}','${chainId||''}')">
+  <div class="modal" style="max-width:960px;width:96vw;height:92vh;display:flex;flex-direction:column">
+    <div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#f8fafc;border-radius:14px 14px 0 0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="backFromPdf('${letterId}','${chainId||''}')" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">← Back to Details</button>
+        <span style="font-family:monospace;font-size:13px;font-weight:700;color:#334155">${esc(letterNum)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <a href="${esc(url)}" target="_blank" rel="noopener" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px">Open in Browser ↗</a>
+        <button onclick="closeM()" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;line-height:1;padding:0 4px">×</button>
+      </div>
+    </div>
+    <iframe src="${esc(url)}" style="flex:1;border:none;display:block;width:100%;border-radius:0 0 14px 14px" allow="fullscreen"></iframe>
+  </div></div>`;
+}
+
+// ══ FORM ══════════════════════════════════════════════════════════════════════
+let FS={};
+function splitLN(full,cat){if(!full)return{prefix:catPfx(cat),suffix:""};const i=full.lastIndexOf("/");if(i===-1)return{prefix:catPfx(cat),suffix:full};return{prefix:full.slice(0,i+1),suffix:full.slice(i+1)};}
+
+function renderForm(letter){
+  const sp=splitLN(letter?letter.letterNumber:"",letter?letter.category:ST.tab);
+  FS={
+    category:letter?letter.category:ST.tab==="__all__"?"incoming":ST.tab,
+    prefix:sp.prefix,suffix:sp.suffix,_editPrefix:false,_showCustomDept:false,
+    sendDate:letter?letter.sendDate||"":"",hardCopyDate:letter?letter.hardCopyDate||"":"",
+    subject:letter?cleanTxt(letter.subject||""):"",
+    employerRefs:Array.isArray(letter?.employerRefs)?[...letter.employerRefs]:letter?.employerRef?[letter.employerRef]:[],
+    engineerRefs:Array.isArray(letter?.engineerRefs)?[...letter.engineerRefs]:[],
+    sinohydroRefs:Array.isArray(letter?.sinohydroRefs)?[...letter.sinohydroRefs]:[],
+    replyRefs:Array.isArray(letter?.replyRefs)?[...letter.replyRefs]:letter?.replyRef?[letter.replyRef]:[],
+    engineerReplies:Array.isArray(letter?.engineerReplies)?[...letter.engineerReplies]:letter?.engineerReply?[letter.engineerReply]:[],
+    sinoReplies:Array.isArray(letter?.sinoReplies)?[...letter.sinoReplies]:[],
+    cc:letter?letter.cc||"":"",attachment:letter?letter.attachment||"":"",
+    department:letter?letter.department||"":"",remarks:letter?letter.remarks||"":"",status:letter?letter.status||"":"",
+    sendTo:letter?letter.sendTo||"":"",
+    sendDateNepali:letter?letter.sendDateNepali||"":"",letterTo:letter?letter.letterTo||"":"",
+    letterFrom:letter?letter.letterFrom||"":"",receivedDateNepali:letter?letter.receivedDateNepali||"":"",
+    docTypes:Array.isArray(letter?.docTypes)?[...letter.docTypes]:[],
+    locations:Array.isArray(letter?.locations)?[...letter.locations]:[],
+    tags:Array.isArray(letter?.tags)?[...letter.tags]:[],
+    letterUrl:letter?letter.letterUrl||"":"",
+    attachments:letter?JSON.parse(JSON.stringify(letter.attachments||[])):[]	,
+    _id:letter?letter.id:null,
+    _allTags:[...(ST.allTags||[])],_allDocTypes:[...(ST.allDocTypes||[])],
+    _allLocations:[...(ST.allLocations||[])],_allDepts:[...(ST.allDepts||[])],
+  };
+  buildForm();
+}
+
+function tc2(tag,allT){const i=allT.indexOf(tag);return TCOLORS[Math.abs(i)%TCOLORS.length];}
+
+function mvTagsHTML(arr,color){
+  return (arr||[]).map(r=>`<span class="mv-tag" style="background:${color}22;border-color:${color}55;color:${color}">${esc(r)}<button class="rx" onclick="remMV(event,'${esc(r)}')">×</button></span>`).join("");
+}
+
+// Chip selector HTML
+function chipSelHTML(selArr,allArr,colorFn,type){
+  const sa=selArr||[], aa=allArr||[];
+  const selH=sa.map(t=>`<span style="background:${colorFn(t,aa)}22;border:1px solid ${colorFn(t,aa)}55;color:${colorFn(t,aa)};border-radius:20px;padding:3px 9px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px">${esc(t)}<button onclick="rmChip('${type}','${esc(t)}')" style="background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;line-height:1;padding:0">×</button></span>`).join("");
+  const allH=aa.map(t=>{const s=sa.includes(t);const c=colorFn(t,aa);return`<button class="pg-pill" style="border-color:${s?c:c+"44"};background:${s?c+"22":"white"};color:${s?c:"#64748b"};font-weight:${s?700:500}" onclick="togChip('${type}','${esc(t)}')">${s?"✓ ":""}${esc(t)}</button>`;}).join("");
+  return{selH,allH};
+}
+
+function buildForm(){
+  const isEdit=!!FS._id;const cat=FS.category;
+  const ln=FS.prefix+FS.suffix;
+  const catOpts=CATS.map(c=>`<option value="${c.id}"${c.id===cat?" selected":""}>${c.label}</option>`).join("");
+  const sOpts=['<option value="">— Select —</option>',...Object.keys(STATUSES).map(k=>`<option value="${k}"${k===FS.status?" selected":""}>${k}</option>`)].join("");
+  // Department: custom or dropdown
+  const deptOpts=['<option value="">— Select —</option>',...FS._allDepts.map(d=>`<option value="${d}"${d===FS.department?" selected":""}>${d}</option>`),'<option value="__custom__">✏ Type custom department…</option>'].join("");
+  const showCustomDept=FS._showCustomDept||false;
+
+  const emrH=mvTagsHTML(FS.employerRefs,"#6d28d9");
+  const erH=mvTagsHTML(FS.engineerRefs,"#c2410c");
+  const egrH=mvTagsHTML(FS.engineerReplies,"#047857");
+  const srH=mvTagsHTML(FS.sinohydroRefs,"#0369a1");
+  const rrH=mvTagsHTML(FS.replyRefs,"#0f172a");
+
+  const dtCS=chipSelHTML(FS.docTypes,FS._allDocTypes,tc2,"dt");
+  const locCS=chipSelHTML(FS.locations,FS._allLocations,tc2,"loc");
+  const tagCS=chipSelHTML(FS.tags,FS._allTags,tc2,"tag");
+
+  const pfxHtml=FS._editPrefix
+    ?`<input class="lno-pfx-input" id="pfx-inp" value="${esc(FS.prefix)}" oninput="FS.prefix=this.value;updPrev()"/>`
+    :`<div class="lno-pfx-display">${FS.prefix||'<span style="color:#cbd5e1;font-style:italic">empty</span>'}</div>`;
+
+  const showN=cat==="employer"||cat==="gov_out";
+  const showRN=cat==="gov_in";const showLF=cat==="gov_in";
+  const showLT=cat==="employer"||cat==="eng_employer"||cat==="gov_in"||cat==="gov_out";
+  const showST=cat==="outgoing";const showER=cat==="outgoing";const showLoc2=cat==="incoming"||cat==="outgoing";
+
+  document.getElementById("mroot").innerHTML=`<div class="overlay">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-hd"><h2>${isEdit?"Edit Letter":"Add New Letter"}</h2><button class="mclose" onclick="closeM()">×</button></div>
+    <div class="modal-body"><div class="fgrid">
+
+      <div class="field full"><label>Category *</label>
+        <select onchange="FS.category=this.value;FS.prefix=catPfx(this.value);FS._editPrefix=false;buildForm()">${catOpts}</select></div>
+
+      <!-- Smart Letter Number -->
+      <div class="field full"><label>Letter Number *</label>
+        <div class="lno-preview">${ln?`<span style="color:#6d28d9">${esc(FS.prefix)}</span><span style="font-weight:800;color:#0f172a">${esc(FS.suffix)}</span>`:'<span style="color:#94a3b8">enter number below…</span>'}</div>
+        <div class="lno-pfx-hd"><span>Prefix</span>
+          <div class="lno-acts">
+            <button onclick="FS._editPrefix=!FS._editPrefix;buildForm()" style="color:#2563eb">${FS._editPrefix?"✓ done":"✏ edit"}</button>
+            <button onclick="FS.prefix=catPfx(FS.category);FS._editPrefix=false;buildForm()" style="color:#f97316">↺ reset</button>
+            <button onclick="FS.prefix='';FS._editPrefix=false;buildForm()" style="color:#64748b">✕ clear</button>
+          </div></div>
+        ${pfxHtml}
+        <div class="lno-sfx-lbl">Number / Suffix *</div>
+        <input class="lno-sfx-input" id="sfx-inp" value="${esc(FS.suffix)}" oninput="FS.suffix=this.value;updPrev()" placeholder="e.g. 737"/>
+      </div>
+
+      <div class="field"><label>Send Date</label><input type="date" value="${FS.sendDate}" oninput="FS.sendDate=this.value"/></div>
+      <div class="field"><label>Hard Copy Received Date</label><input type="date" value="${FS.hardCopyDate}" oninput="FS.hardCopyDate=this.value"/></div>
+      ${showN?`<div class="field full"><label>Send Date (Nepali)</label><input value="${esc(FS.sendDateNepali)}" oninput="FS.sendDateNepali=this.value" placeholder="e.g. 2081/01/15"/></div>`:""}
+      ${showRN?`<div class="field full"><label>Received Date (Nepali)</label><input value="${esc(FS.receivedDateNepali)}" oninput="FS.receivedDateNepali=this.value"/></div>`:""}
+      ${showLF?`<div class="field full"><label>Letter From</label><input value="${esc(FS.letterFrom)}" oninput="FS.letterFrom=this.value"/></div>`:""}
+      ${showLT?`<div class="field full"><label>Letter To</label><input value="${esc(FS.letterTo)}" oninput="FS.letterTo=this.value"/></div>`:""}
+      ${showST?`<div class="field full"><label>Letter Send To</label><input value="${esc(FS.sendTo)}" oninput="FS.sendTo=this.value"/></div>`:""}
+      <div class="field full"><label>Subject *</label><textarea oninput="FS.subject=this.value">${esc(FS.subject)}</textarea></div>
+
+      <!-- Multi employer ref -->
+      <div class="field full"><label>Employer's Ref. Numbers</label>
+        <div class="mv-row"><input id="emr-inp" placeholder="Add ref, Enter or +" onkeydown="if(event.key==='Enter'){event.preventDefault();addMV('employerRefs','emr-inp')}" style="font-family:monospace"/>
+        <button class="addbtn" style="background:#6d28d9" onclick="addMV('employerRefs','emr-inp')">+ Add</button></div>
+        ${emrH?`<div class="mv-tags">${emrH}</div>`:""}</div>
+
+      <!-- Engineer refs -->
+      <div class="field full"><label>Engineer Ref. Numbers</label>
+        <div class="mv-row"><input id="er-inp" placeholder="Add ref, Enter or +" onkeydown="if(event.key==='Enter'){event.preventDefault();addMV('engineerRefs','er-inp')}" style="font-family:monospace"/>
+        <button class="addbtn" onclick="addMV('engineerRefs','er-inp')">+ Add</button></div>
+        ${erH?`<div class="mv-tags">${erH}</div>`:""}</div>
+
+      <!-- Sinohydro refs -->
+      <div class="field full"><label>Sinohydro Ref. Numbers</label>
+        <div class="mv-row"><input id="sr-inp" placeholder="Add ref, Enter or +" onkeydown="if(event.key==='Enter'){event.preventDefault();addMV('sinohydroRefs','sr-inp')}" style="font-family:monospace"/>
+        <button class="addbtn" style="background:#0369a1" onclick="addMV('sinohydroRefs','sr-inp')">+ Add</button></div>
+        ${srH?`<div class="mv-tags">${srH}</div>`:""}</div>
+
+      <!-- Reply refs -->
+      <div class="field full"><label>Sinohydro's Reply Ref. Numbers</label>
+        <div class="mv-row"><input id="rr-inp" placeholder="Add ref, Enter or +" onkeydown="if(event.key==='Enter'){event.preventDefault();addMV('replyRefs','rr-inp')}" style="font-family:monospace"/>
+        <button class="addbtn" style="background:#475569" onclick="addMV('replyRefs','rr-inp')">+ Add</button></div>
+        ${rrH?`<div class="mv-tags">${rrH}</div>`:""}</div>
+
+      <div class="field full"><label>Engineer's Reply Numbers</label>
+        <div class="mv-row"><input id="egr-inp" placeholder="Add reply ref, Enter or +" onkeydown="if(event.key==='Enter'){event.preventDefault();addMV('engineerReplies','egr-inp')}" style="font-family:monospace"/>
+        <button class="addbtn" style="background:#047857" onclick="addMV('engineerReplies','egr-inp')">+ Add</button></div>
+        ${egrH?`<div class="mv-tags">${egrH}</div>`:""}</div>
+
+      <!-- Department (custom) -->
+      <div class="field"><label>Department</label>
+        <select id="dept-sel" style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:13px;outline:none;background:#fafafa;color:#1e293b" onchange="onDeptChange(this.value)">${deptOpts}</select>
+        ${showCustomDept?`<div style="display:flex;gap:7px;margin-top:5px">
+          <input id="custom-dept-inp" value="${esc(FS.department&&!FS._allDepts.includes(FS.department)?FS.department:'')}"
+            placeholder="Type department name…"
+            oninput="FS.department=this.value"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();saveCustomDept()}"
+            style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid #93c5fd;font-size:13px;outline:none;background:#eff6ff;color:#1e293b" autofocus/>
+          <button onclick="saveCustomDept()" style="background:#2563eb;color:white;border:none;border-radius:7px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer">✓ Add</button>
+          <button onclick="FS._showCustomDept=false;FS.department='';buildForm()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:7px;padding:7px 10px;font-size:12px;cursor:pointer">✕</button>
+        </div>`:""}
+      </div>
+      <div class="field"><label>Status</label><select onchange="FS.status=this.value">${sOpts}</select></div>
+      <div class="field"><label>CC</label><input value="${esc(FS.cc)}" oninput="FS.cc=this.value"/></div>
+      <div class="field"><label>Remarks</label><input value="${esc(FS.remarks)}" oninput="FS.remarks=this.value"/></div>
+      <div class="field full"><label>Attachment Description</label><input value="${esc(FS.attachment||'')}" oninput="FS.attachment=this.value" placeholder="e.g. Comment &amp; Reply Sheet (2 pages)"/></div>
+
+      <!-- Letter Document Link -->
+      <div class="field full"><label>📄 Letter Document Link (Nutstore URL)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="f-lurl" value="${esc(FS.letterUrl||'')}" oninput="FS.letterUrl=this.value"
+            placeholder="https://share.jianguoyun.com/..." style="font-family:monospace;font-size:12px;color:#2563eb;flex:1"/>
+          ${FS.letterUrl
+            ?`<a href="${esc(FS.letterUrl)}" target="_blank" style="color:#2563eb;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;background:#dbeafe;border-radius:5px;padding:5px 10px">🔗 Test</a>
+               <button onclick="FS.letterUrl='';buildForm()" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">✕ Remove</button>`
+            :""}
+        </div>
+      </div>
+
+      <!-- Attachments with URLs -->
+      <div class="field full"><label>📎 Attachments &amp; Links</label>
+        <div id="att-list">
+          ${(FS.attachments||[]).map((a,i)=>`
+          <div class="att-item" style="grid-template-columns:1fr 1fr auto auto">
+            <input placeholder="Attachment name (e.g. Annexure-I: ...)" value="${esc(a.name||'')}" oninput="FS.attachments[${i}].name=this.value"/>
+            <input class="url-inp" placeholder="https://share.jianguoyun.com/..." value="${esc(a.url||'')}" oninput="FS.attachments[${i}].url=this.value"/>
+            ${a.url?`<a href="${esc(a.url)}" target="_blank" style="color:#2563eb;background:#dbeafe;border:none;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap">🔗</a>`:'<span></span>'}
+            <button class="att-remove" onclick="removeAtt(${i})">✕</button>
+          </div>`).join('')}
+        </div>
+        ${!(FS.attachments||[]).length?`<div style="font-size:11px;color:#94a3b8;padding:8px;text-align:center;border:1px dashed #e2e8f0;border-radius:6px;margin-bottom:6px">No attachments linked yet</div>`:""}
+        <button class="add-att-btn" onclick="addAtt()">+ Add Attachment</button>
+      </div>
+
+      <!-- Document Type -->
+      <div class="field full"><label>📄 Document Type</label>
+        <div class="sel-chips" id="fdt-chips">${dtCS.selH||'<span style="font-size:11px;color:#94a3b8">None selected</span>'}</div>
+        <div class="create-row"><input id="fdt-inp" placeholder="Create new document type…" onkeydown="if(event.key==='Enter'){event.preventDefault();createChip('dt')}"/>
+          <button class="create-btn" style="background:#0369a1;color:white" onclick="createChip('dt')">+ New</button></div>
+        <div class="pill-grid"><div class="pg-label">Select (click to toggle)</div>
+          <div class="pg-pills" id="fdt-pills">${dtCS.allH}</div></div></div>
+
+      <!-- Location -->
+      <div class="field full"><label>📍 Location</label>
+        <div class="sel-chips" id="floc-chips">${locCS.selH||'<span style="font-size:11px;color:#94a3b8">None selected</span>'}</div>
+        <div class="create-row"><input id="floc-inp" placeholder="Create new location…" onkeydown="if(event.key==='Enter'){event.preventDefault();createChip('loc')}"/>
+          <button class="create-btn" style="background:#0e7490;color:white" onclick="createChip('loc')">+ New</button></div>
+        <div class="pill-grid"><div class="pg-label">Select (click to toggle)</div>
+          <div class="pg-pills" id="floc-pills">${locCS.allH}</div></div></div>
+
+      <!-- Tags -->
+      <div class="field full"><label>🏷 Tags</label>
+        <div class="sel-chips" id="ftag-chips">${tagCS.selH||'<span style="font-size:11px;color:#94a3b8">None selected</span>'}</div>
+        <div class="create-row"><input id="ftag-inp" placeholder="Create new tag…" onkeydown="if(event.key==='Enter'){event.preventDefault();createChip('tag')}"/>
+          <button class="create-btn" style="background:#6d28d9;color:white" onclick="createChip('tag')">+ New</button></div>
+        <div class="pill-grid"><div class="pg-label">Select (click to toggle)</div>
+          <div class="pg-pills" id="ftag-pills">${tagCS.allH}</div></div></div>
+
+    </div></div>
+    <div class="modal-ft"><button class="btn-out" onclick="closeM()">Cancel</button>
+      <button class="btn-primary" onclick="submitForm()">${isEdit?"Save Changes":"Add Letter"}</button></div>
+  </div></div>`;
+}
+
+function onDeptChange(v){
+  if(v==="__custom__"){
+    FS._showCustomDept=true;
+    FS.department="";
+    buildForm();
+    setTimeout(()=>{const el=document.getElementById("custom-dept-inp");if(el){el.focus();}},50);
+  } else {
+    FS._showCustomDept=false;
+    FS.department=v;
+  }
+}
+function saveCustomDept(){
+  const inp=document.getElementById("custom-dept-inp");
+  const d=(inp?inp.value:FS.department).trim();
+  if(!d)return;
+  if(!FS._allDepts.includes(d))FS._allDepts=[...FS._allDepts,d];
+  FS.department=d;
+  FS._showCustomDept=false;
+  buildForm();
+}
+
+function updPrev(){
+  const p=document.querySelector(".lno-preview");if(!p)return;
+  const ln=FS.prefix+FS.suffix;
+  p.innerHTML=ln?`<span style="color:#6d28d9">${esc(FS.prefix)}</span><span style="font-weight:800;color:#0f172a">${esc(FS.suffix)}</span>`:'<span style="color:#94a3b8">enter number below…</span>';
+}
+
+// Multi-value field helpers
+let _mvTarget=null;
+function addMV(key,inputId){
+  const inp=document.getElementById(inputId);if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  if(!Array.isArray(FS[key]))FS[key]=[];
+  if(!FS[key].map(x=>x.toLowerCase()).includes(v.toLowerCase()))FS[key]=[...FS[key],v];
+  inp.value="";buildForm();
+  setTimeout(()=>{const el=document.getElementById(inputId);if(el)el.focus();},30);
+}
+function remMV(e,val){
+  e.stopPropagation();
+  const keys=["employerRefs","engineerRefs","sinohydroRefs","replyRefs","engineerReplies"];
+  for(const k of keys){
+    if(Array.isArray(FS[k])&&FS[k].includes(val)){FS[k]=FS[k].filter(x=>x!==val);break;}
+  }
+  buildForm();
+}
+
+// Chip selector helpers
+function addAtt(){
+  if(!Array.isArray(FS.attachments)) FS.attachments=[];
+  FS.attachments.push({name:"",url:""});
+  buildForm();
+}
+function removeAtt(i){
+  if(!Array.isArray(FS.attachments)) return;
+  FS.attachments.splice(i,1);
+  buildForm();
+}
+function togChip(type,val){
+  const k={dt:"docTypes",loc:"locations",tag:"tags"}[type];
+  const arr=Array.isArray(FS[k])?FS[k]:[];
+  FS[k]=arr.includes(val)?arr.filter(t=>t!==val):[...arr,val];
+  rebuildChips(type);
+}
+function rmChip(type,val){togChip(type,val);}
+function createChip(type){
+  const inp=document.getElementById("f"+type+"-inp");if(!inp)return;
+  const t=inp.value.trim();if(!t)return;
+  const allK={dt:"_allDocTypes",loc:"_allLocations",tag:"_allTags"}[type];
+  const selK={dt:"docTypes",loc:"locations",tag:"tags"}[type];
+  if(!Array.isArray(FS[allK]))FS[allK]=[];
+  if(!Array.isArray(FS[selK]))FS[selK]=[];
+  if(!FS[allK].includes(t))FS[allK]=[...FS[allK],t];
+  if(!FS[selK].includes(t))FS[selK]=[...FS[selK],t];
+  inp.value="";rebuildChips(type);
+}
+function rebuildChips(type){
+  const allK={dt:"_allDocTypes",loc:"_allLocations",tag:"_allTags"}[type];
+  const selK={dt:"docTypes",loc:"locations",tag:"tags"}[type];
+  const allArr=Array.isArray(FS[allK])?FS[allK]:[];const selArr=Array.isArray(FS[selK])?FS[selK]:[];
+  const cs=chipSelHTML(selArr,allArr,tc2,type);
+  const sc=document.getElementById("f"+type+"-chips");if(sc)sc.innerHTML=cs.selH||'<span style="font-size:11px;color:#94a3b8">None selected</span>';
+  const pc=document.getElementById("f"+type+"-pills");if(pc)pc.innerHTML=cs.allH;
+}
+
+function submitForm(){
+  const ln=(FS.prefix+FS.suffix).trim();
+  if(!ln){alert("Letter number is required");return;}
+  if(!FS.subject.trim()){alert("Subject is required");return;}
+  ST.allTags=FS._allTags;ST.allDocTypes=FS._allDocTypes;ST.allLocations=FS._allLocations;ST.allDepts=FS._allDepts;
+  const id=FS._id;
+  const f={
+    category:FS.category, letterNumber:ln,
+    sendDate:FS.sendDate, hardCopyDate:FS.hardCopyDate,
+    subject:FS.subject,
+    employerRefs:FS.employerRefs||[], engineerRefs:FS.engineerRefs||[],
+    sinohydroRefs:FS.sinohydroRefs||[], replyRefs:FS.replyRefs||[],
+    engineerReplies:FS.engineerReplies||[], sinoReplies:FS.sinoReplies||[],
+    cc:FS.cc, attachment:FS.attachment, department:FS.department,
+    remarks:FS.remarks, status:FS.status, sendTo:FS.sendTo,
+    sendDateNepali:FS.sendDateNepali, letterTo:FS.letterTo,
+    letterFrom:FS.letterFrom, receivedDateNepali:FS.receivedDateNepali,
+    docTypes:FS.docTypes||[], locations:FS.locations||[], tags:FS.tags||[],
+    letterUrl:FS.letterUrl||"",
+    attachments:FS.attachments||[],
+    pendingStatus:(()=>{
+      const ex=ST.letters.find(l=>l.id===id);
+      if(ex) return ex.pendingStatus||'';          // preserve on edit
+      return (FS.category==='incoming'||FS.category==='outgoing')?'pending':''; // auto-set for new incoming/outgoing
+    })(),
+  };
+  if(id)editL(id,f);else addL(f);closeM();
+}
+
+
+// ══ CORRESPONDENCE CHAIN ══════════════════════════════════════════════════════
+function getAllRefs(l){
+  // ALL refs — used for search/display
+  return new Set([
+    ...(l.replyRefs||[]),
+    ...(l.engineerRefs||[]),
+    ...(l.sinohydroRefs||[]),
+    ...(l.employerRefs||[]),
+    ...(l.engineerReplies||[]),
+  ].map(r=>r.toLowerCase()));
+}
+
+function buildChain(startLetter){
+  // ROBUST CHAIN BUILDING — Forward + Reverse + Year-Agnostic Fuzzy Match
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Problem: Source Excel often has wrong year in ref cells, e.g. a letter
+  // says "TKV/COM/2026/638" but the actual outgoing is "TKV/COM/2025/638".
+  // Exact match fails silently → first letter in the chain goes missing.
+  //
+  // Solution — three-layer lookup:
+  //  1. Exact match by full letter number
+  //  2. Year-agnostic suffix match: strip year, match prefix+number
+  //     e.g. "TKV/COM/2026/638" → finds "TKV/COM/2025/638" (unique /638)
+  //  3. Reverse index: find letters that reference THIS letter in their refs
+  //     (handles cases where outgoing sheet has empty Engineer's Reply)
+  //
+  // PHASE 2 — cited refs added as 1-hop context (no recursion → no explosion)
+  // MAX 40 letters hard cap.
+
+  const MAX = 40;
+  const visited = new Set([startLetter.id]);
+  const chain   = [startLetter];
+
+  // ── Forward index: exact letter number lookup ───────────────────────────
+  const byNum = {};
+  ST.letters.forEach(l => {
+    if(l.letterNumber) byNum[l.letterNumber.toLowerCase()] = l;
+  });
+
+  // ── Year-agnostic suffix index ──────────────────────────────────────────
+  // Key = "tkv/com/NNN" (prefix + number, NO year)
+  // Value = array of ALL letters matching that prefix+suffix across all years
+  // Responses can come 200-300+ days later so we never filter by year.
+  const bySuffix = {};
+  ST.letters.forEach(l => {
+    if(!l.letterNumber) return;
+    const k = l.letterNumber.toLowerCase();
+    const parts = k.split('/');
+    if(parts.length >= 4){ // TKV/COM/YYYY/NNN or similar
+      const sfx = parts[parts.length-1];
+      const pfx = parts.slice(0,-2).join('/');
+      const key = pfx + '/' + sfx;
+      if(!bySuffix[key]) bySuffix[key] = [];
+      bySuffix[key].push(l);
+    }
+  });
+
+  // ── Org+number index ────────────────────────────────────────────────────
+  // Handles sub-category variants e.g. LOT-01/SINOHYDRO-KSNS-JV/806 matching
+  // LOT-01/SINOHYDRO-KSNS-JV/Interface/806 (extra segment in the middle).
+  // Key = parts[0] + "/" + parts[1] + "/" + lastPart (ignores middle segments)
+  const byOrgNum = {};
+  ST.letters.forEach(l => {
+    if(!l.letterNumber) return;
+    const parts = l.letterNumber.toLowerCase().split('/');
+    if(parts.length >= 3){
+      const key = parts[0] + '/' + parts[1] + '/' + parts[parts.length-1];
+      if(!byOrgNum[key]) byOrgNum[key] = [];
+      byOrgNum[key].push(l);
+    }
+  });
+
+  // ── Reverse index: who references THIS letter? ───────────────────────────
+  const revEngReply  = {}; // letterNum → outgoing letters with it in engineerReplies
+  const revSinoReply = {}; // letterNum → letters with it in sinoReplies
+  const revReplyRef  = {}; // letterNum → letters with it in replyRefs
+  const revEngRef    = {}; // letterNum → outgoing letters with it in engineerRefs
+  ST.letters.forEach(l => {
+    const idx = (map, refs) => (refs||[]).forEach(r => {
+      const k=r.toLowerCase(); if(!map[k])map[k]=[]; map[k].push(l);
+    });
+    idx(revEngReply,  l.engineerReplies);
+    idx(revSinoReply, l.sinoReplies);
+    idx(revReplyRef,  l.replyRefs);
+    idx(revEngRef,    l.engineerRefs);
+  });
+
+  // ── findRef: year-agnostic 3-layer lookup ──────────────────────────────
+  // We NEVER filter by year because responses can arrive 200-300+ days later,
+  // crossing year boundaries. Excel refs often have the wrong year written.
+  // When multiple candidates exist across years, we pick the best one by
+  // finding the letter sent closest-before the referencing letter's date.
+  function findRef(ref, contextDate){
+    if(!ref) return null;
+    const k = ref.toLowerCase();
+
+    // Layer 1: exact match
+    if(byNum[k]) return byNum[k];
+
+    // Layer 2: year-agnostic suffix match — ignore the year entirely
+    const parts = k.split('/');
+    if(parts.length >= 4){
+      const sfx = parts[parts.length-1];
+      const pfx = parts.slice(0,-2).join('/');
+      const key = pfx + '/' + sfx;
+      const cands = bySuffix[key]||[];
+      if(cands.length === 1) return cands[0];
+      if(cands.length > 1){
+        const refDate = contextDate ? new Date(contextDate) : null;
+        if(refDate && !isNaN(refDate)){
+          const before = cands.filter(l => l.sendDate && new Date(l.sendDate) <= refDate);
+          if(before.length > 0){
+            return before.reduce((a,b) =>
+              new Date(b.sendDate) > new Date(a.sendDate) ? b : a
+            );
+          }
+        }
+        return cands.reduce((a,b) =>
+          new Date(b.sendDate||0) > new Date(a.sendDate||0) ? b : a
+        );
+      }
+    }
+
+    // Layer 3: org+number match — handles sub-category variants
+    // e.g. LOT-01/SINOHYDRO-KSNS-JV/806 finds LOT-01/SINOHYDRO-KSNS-JV/Interface/806
+    if(parts.length >= 3){
+      const key3 = parts[0] + '/' + parts[1] + '/' + parts[parts.length-1];
+      const cands3 = byOrgNum[key3]||[];
+      // Only use if the exact match wouldn't already be in this set
+      const filtered = cands3.filter(l => l.letterNumber.toLowerCase() !== k);
+      if(filtered.length === 1) return filtered[0];
+      if(filtered.length > 1){
+        const refDate = contextDate ? new Date(contextDate) : null;
+        if(refDate && !isNaN(refDate)){
+          const before = filtered.filter(l => l.sendDate && new Date(l.sendDate) <= refDate);
+          if(before.length > 0) return before.reduce((a,b) => new Date(b.sendDate) > new Date(a.sendDate) ? b : a);
+        }
+        return filtered.reduce((a,b) => new Date(b.sendDate||0) > new Date(a.sendDate||0) ? b : a);
+      }
+    }
+
+    return null;
+  }
+
+  function add(l){
+    if(!l || visited.has(l.id) || chain.length >= MAX) return false;
+    visited.add(l.id); chain.push(l); return true;
+  }
+
+  function addRef(ref, date){ return add(findRef(ref, date)); }
+
+  // ── PHASE 1: directed BFS ─────────────────────────────────────────────────
+  function expand(letter){
+    if(chain.length >= MAX) return;
+    const isOut = letter.category==='outgoing'||letter.category==='eng_employer';
+    const lNum  = (letter.letterNumber||"").toLowerCase();
+    const lDate = letter.sendDate; // used for year-agnostic disambiguation
+
+    if(isOut){
+      // ① Forward: outgoing → engineerRefs → the incoming letter(s) it was responding to
+      (letter.engineerRefs||[]).forEach(ref => add(findRef(ref, lDate)));
+      // ② Forward: outgoing → engineerReplies → incoming letters that replied to it
+      (letter.engineerReplies||[]).forEach(ref => add(findRef(ref, lDate)));
+
+    } else {
+      // ③ Forward: incoming → replyRefs → outgoing that triggered it
+      (letter.replyRefs||[]).forEach(ref => {
+        add(findRef(ref, lDate));
+      });
+      // ④ Forward: incoming → sinoReplies → our outgoing reply
+      (letter.sinoReplies||[]).forEach(ref => {
+        add(findRef(ref, lDate));
+      });
+      // ⑤ Forward: incoming → sinohydroRefs → the TKV outgoing letter it references
+      (letter.sinohydroRefs||[]).forEach(ref => {
+        add(findRef(ref, lDate));
+      });
+      // ⑥ Reverse: outgoing letters that list THIS incoming in their engineerReplies
+      (revEngReply[lNum]||[]).forEach(t => add(t));
+      // ⑦ Reverse: letters that list THIS as their sinoReply target
+      (revSinoReply[lNum]||[]).forEach(t => add(t));
+      // ⑧ Reverse: outgoing letters that reference THIS incoming in their engineerRefs
+      (revEngRef[lNum]||[]).forEach(t => add(t));
+    }
+  }
+
+  let wave = [startLetter];
+  for(let depth=0; depth<4 && chain.length<MAX; depth++){
+    const next=[];
+    wave.forEach(l => {
+      const before=chain.length;
+      expand(l);
+      chain.slice(before).forEach(nl=>next.push(nl));
+    });
+    if(!next.length) break;
+    wave = next;
+  }
+
+  // ── PHASE 2: 1-hop cited references (no recursion) ───────────────────────
+  const snap = [...chain];
+  snap.forEach(letter => {
+    if(chain.length >= MAX) return;
+    const d = letter.sendDate;
+    // 1-hop cited references — employerRefs excluded (unrelated context, causes explosion)
+    (letter.engineerRefs||[]).forEach(ref => add(findRef(ref, d)));
+  });
+
+  return chain.sort((a,b)=>new Date(a.sendDate||a.createdAt||0)-new Date(b.sendDate||b.createdAt||0));
+}
+
+function openChain(id){
+  const letter=ST.letters.find(l=>l.id===id);
+  if(!letter)return;
+  const chain=buildChain(letter);
+  renderChainModal(chain,id);
+}
+
+function openChainFromRef(refNum){
+  const q=refNum.toLowerCase();
+  // Exact match on letter number first
+  let found=ST.letters.find(l=>(l.letterNumber||"").toLowerCase()===q);
+  // Year-agnostic suffix match for TKV/COM/YYYY/NNN
+  if(!found){
+    const parts=q.split('/');
+    if(parts.length>=4){
+      const sfx=parts[parts.length-1], pfx=parts.slice(0,-2).join('/');
+      const cands=ST.letters.filter(l=>{
+        const ln=(l.letterNumber||"").toLowerCase().split('/');
+        return ln.length>=4&&ln[ln.length-1]===sfx&&ln.slice(0,-2).join('/')===pfx;
+      });
+      if(cands.length===1) found=cands[0];
+    }
+  }
+  // Search by refs if still not found
+  if(!found) found=ST.letters.find(l=>
+    (l.replyRefs||[]).some(r=>r.toLowerCase()===q)||
+    (l.engineerRefs||[]).some(r=>r.toLowerCase()===q)||
+    (l.sinohydroRefs||[]).some(r=>r.toLowerCase()===q)||
+    (l.engineerReplies||[]).some(r=>r.toLowerCase()===q)||
+    (l.sinoReplies||[]).some(r=>r.toLowerCase()===q)
+  );
+  if(found){openChain(found.id);}
+  else{alert("No letter found in records with number: "+refNum);}
+}
+
+function renderChainModal(chain, currentId){
+  if(chain.length===0)return;
+  let html=`<div class="overlay" onclick="if(event.target===this)closeM()">
+  <div class="modal chain-modal">
+    <div class="modal-hd">
+      <div>
+        <h2>Correspondence Chain</h2>
+        <div style="font-size:11px;color:#94a3b8;margin-top:2px" id="chain-count-label">
+      ${chain.length} letter${chain.length>1?"s":""} in chain
+      ${chain.length>=40?' <span style="color:#f59e0b;font-weight:600">⚠ capped at 40</span>':""}
+      <span style="color:#cbd5e1;margin:0 4px">·</span>
+      <span style="color:#94a3b8">direct replies + cited references</span>
+    </div>
+      </div>
+      <button class="mclose" onclick="closeM()">×</button>
+    </div>
+    <div class="modal-body" style="padding:16px 20px">
+      <div class="chain-timeline">`;
+
+  chain.forEach((l,i)=>{
+    const cat=catOf(l.category);
+    const sc=STATUSES[l.status]||{};
+    const isCurrent=l.id===currentId;
+    const isLast=i===chain.length-1;
+    const dotColor=cat.color;
+
+    // Which refs connect this letter to the previous one
+    const prevL=i>0?chain[i-1]:null;
+    const connRefs=[];
+    if(prevL){
+      const prevNum=(prevL.letterNumber||"").toLowerCase();
+      const allR=getAllRefs(l);
+      if(allR.has(prevNum))connRefs.push(prevL.letterNumber);
+      const lNum=(l.letterNumber||"").toLowerCase();
+      const prevRefs=getAllRefs(prevL);
+      if(prevRefs.has(lNum))connRefs.push("→ referenced by prev");
+    }
+
+    // All refs on this letter
+    const allLetterRefs=[
+      ...(l.replyRefs||[]).map(r=>({r,label:"Reply to (TKV)",color:"#0369a1"})),
+      ...(l.engineerReplies||[]).map(r=>({r,label:"Eng.Reply (LOT-01)",color:"#c2410c"})),
+      ...(l.sinoReplies||[]).map(r=>({r,label:"Sino.Reply (TKV)",color:"#047857"})),
+      ...(l.engineerRefs||[]).map(r=>({r,label:"Eng.Ref",color:"#92400e"})),
+      ...(l.sinohydroRefs||[]).map(r=>({r,label:"SinoRef",color:"#64748b"})),
+    ];
+
+    html+=`<div class="chain-item">
+      <div class="chain-date" style="padding-top:2px">${fmtD(l.sendDate)||"—"}</div>
+      <div class="chain-spine">
+        <div class="chain-dot" style="border-color:${dotColor};background:${isCurrent?dotColor:"white"}"></div>
+        ${!isLast?`<div class="chain-line" style="background:linear-gradient(${dotColor},${catOf(chain[i+1].category).color})"></div>`:""}
+      </div>
+      <div class="chain-card${isCurrent?" current":""}" style="${isCurrent?`border-color:${dotColor};`:""}background:${isCurrent?dotColor+"08":"white"}" onclick="openDetFromChain('${currentId}','${l.id}')">
+        <div class="cc-top">
+          <span class="cc-lno" style="color:${dotColor}">${esc(l.letterNumber)}</span>
+          <span class="cat-badge" style="background:${cat.bg};color:${cat.dark}">${cat.icon} ${cat.short}</span>
+          ${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg}">${l.status}</span>`:""}
+          ${isCurrent?`<span style="font-size:10px;font-weight:700;color:${dotColor};margin-left:auto">← viewing</span>`:""}
+        </div>
+        <div class="cc-sub">${esc(l.subject)}</div>
+        ${allLetterRefs.length?`<div class="cc-refs">
+          ${allLetterRefs.slice(0,4).map(({r,label,color})=>`<span class="cc-ref-pill" style="border-color:${color}44;color:${color};background:${color}11">
+            <span style="opacity:.7;font-size:9px">${label}: </span>${esc(r)}</span>`).join("")}
+          ${allLetterRefs.length>4?`<span style="font-size:10px;color:#94a3b8">+${allLetterRefs.length-4} more</span>`:""}
+        </div>`:""}
+      </div>
+    </div>`;
+  });
+
+  html+=`</div></div>
+    <div class="modal-ft" style="justify-content:space-between">
+      <div style="font-size:12px;color:#94a3b8">Click any letter card to view its full detail</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-out" onclick="openDet('${currentId}')" style="color:#2563eb;border-color:#93c5fd">← Back to Letter</button>
+        <button class="btn-out" onclick="closeM()">Close</button>
+      </div>
+    </div>
+  </div></div>`;
+  document.getElementById("mroot").innerHTML=html;
+}
+
+
+// ══ CSV IMPORT ════════════════════════════════════════════════════════════════
+
+// Map category labels back to IDs
+const CAT_LABEL_MAP={};
+CATS.forEach(c=>{CAT_LABEL_MAP[c.label.toLowerCase()]=c.id;CAT_LABEL_MAP[c.short.toLowerCase()]=c.id;});
+
+function catIdFromLabel(label){
+  if(!label)return"incoming";
+  const l=label.toLowerCase().trim();
+  return CAT_LABEL_MAP[l]||
+    (l.includes("outgoing")?"outgoing":l.includes("employer")&&l.includes("engineer")?"eng_employer":
+    l.includes("employer")?"employer":l.includes("govt")&&l.includes("out")?"gov_out":
+    l.includes("govt")&&l.includes("in")?"gov_in":"incoming");
+}
+
+function parseCSV(text){
+  const rows=[];
+  let row=[],cur="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(ch==='"'){
+      if(inQ&&text[i+1]==='"'){cur+='"';i++;}
+      else inQ=!inQ;
+    } else if(ch===','&&!inQ){
+      row.push(cur);cur="";
+    } else if(ch==='\n'&&!inQ){
+      row.push(cur);rows.push(row);row=[];cur="";
+      if(text[i+1]==='\r')i++;
+    } else if(ch==='\r'&&!inQ){
+      row.push(cur);rows.push(row);row=[];cur="";
+      if(text[i+1]==='\n')i++;
+    } else {
+      cur+=ch;
+    }
+  }
+  if(cur||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.length>1&&r.some(c=>c.trim()));
+}
+
+function parseDateStr(s){
+  if(!s)return"";
+  // Try YYYY-MM-DD first
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s.trim()))return s.trim();
+  // Try D-Mon-YYYY
+  const m=s.trim().match(/^(\d{1,2})-([A-Za-z]+)-(\d{4})$/);
+  if(m){
+    const months={jan:"01",feb:"02",mar:"03",apr:"04",may:"05",jun:"06",jul:"07",aug:"08",sep:"09",oct:"10",nov:"11",dec:"12"};
+    const mo=months[m[2].toLowerCase()];
+    if(mo)return`${m[3]}-${mo}-${m[1].padStart(2,"0")}`;
+  }
+  return s.trim();
+}
+
+function splitArr(s){
+  if(!s||!s.trim())return[];
+  return s.split("|").map(x=>x.trim()).filter(Boolean);
+}
+
+function csvRowToLetter(headers, row){
+  const get=(name)=>{
+    const i=headers.findIndex(h=>h.toLowerCase().trim()===name.toLowerCase());
+    return i>=0?(row[i]||"").trim():"";
+  };
+  return{
+    id:Date.now()+"_"+Math.random().toString(36).slice(2,7),
+    createdAt:Date.now(),
+    category:catIdFromLabel(get("category")),
+    letterNumber:get("letter no."),
+    sendDate:parseDateStr(get("send date")),
+    hardCopyDate:parseDateStr(get("hard copy date")||get("hard copy received date")),
+    subject:get("subject"),
+    employerRefs:splitArr(get("employer's ref.")),
+    engineerRefs:splitArr(get("engineer ref.")),
+    sinohydroRefs:splitArr(get("sinohydro ref.")),
+    replyRefs:splitArr(get("reply ref.")||get("sinohydro's reply ref.no.")),
+    engineerReplies:splitArr(get("engineer's reply")),
+    sinoReplies:splitArr(get("sinohydro's reply")||get("sino reply")),
+    letterUrl:get("letter url (paste nutstore link here)")||get("letter url")||get("document url")||get("letter link")||"",
+    attachments:(()=>{
+      // Support format: "Name1::URL1 | Name2::URL2"
+      const raw=get("attachment urls (format: name1::url1 | name2::url2)")||get("attachment urls")||get("attachments urls")||"";
+      if(!raw.trim()) return [];
+      return raw.split("|").map(s=>{
+        const parts=s.trim().split("::");
+        return{name:(parts[0]||"").trim(),url:(parts[1]||"").trim()};
+      }).filter(a=>a.name||a.url);
+    })(),
+    department:get("department"),
+    status:get("status"),
+    cc:get("cc")||get("cc:"),
+    remarks:get("remarks"),
+    attachment:get("attachment"),
+    docTypes:splitArr(get("doc types")||get("document type")),
+    locations:splitArr(get("locations")||get("location")),
+    tags:splitArr(get("tags")),
+    pendingStatus:'', // will be set by initPendingForLatest after import
+  };
+}
+
+function openImportModal(){
+  document.getElementById("mroot").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeM()">
+  <div class="modal import-modal">
+    <div class="modal-hd"><h2>Import from CSV</h2><button class="mclose" onclick="closeM()">×</button></div>
+    <div class="modal-body">
+      <div class="drop-zone" id="dz" onclick="document.getElementById('csv-file-inp').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="event.preventDefault();this.classList.remove('drag-over');handleCSVFile(event.dataTransfer.files[0])">
+        <div class="dz-icon">📂</div>
+        <div class="dz-text">Click to choose CSV file or drag & drop</div>
+        <div class="dz-sub">Must be a CSV exported from this app or matching column format</div>
+      </div>
+      <input type="file" id="csv-file-inp" accept=".csv" style="display:none" onchange="handleCSVFile(this.files[0])"/>
+      <div id="import-preview-area"></div>
+    </div>
+    <div class="modal-ft"><button class="btn-out" onclick="closeM()">Cancel</button></div>
+  </div></div>`;
+}
+
+function handleCSVFile(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let text=e.target.result;
+    // Remove BOM if present
+    if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+    const rows=parseCSV(text);
+    if(rows.length<2){alert("CSV appears empty or invalid.");return;}
+    const headers=rows[0];
+    const dataRows=rows.slice(1).filter(r=>r.some(c=>c.trim()));
+    const letters=dataRows.map(r=>csvRowToLetter(headers,r)).filter(l=>l.letterNumber);
+
+    // Count by category
+    const catCounts={};
+    CATS.forEach(c=>{catCounts[c.id]=0;});
+    letters.forEach(l=>{if(catCounts[l.category]!==undefined)catCounts[l.category]++;else catCounts[l.category]=1;});
+
+    // Collect new tags/docTypes/locations/depts
+    const newTags=[...new Set(letters.flatMap(l=>l.tags||[]))].filter(t=>!ST.allTags.includes(t));
+    const newDTs=[...new Set(letters.flatMap(l=>l.docTypes||[]))].filter(t=>!ST.allDocTypes.includes(t));
+    const newLocs=[...new Set(letters.flatMap(l=>l.locations||[]))].filter(t=>!ST.allLocations.includes(t));
+    const newDepts=[...new Set(letters.map(l=>l.department).filter(Boolean))].filter(t=>!ST.allDepts.includes(t));
+
+    // Store parsed letters in global so onclick buttons can access safely
+    window._pendingImport = letters;
+
+    const newInfo = (newTags.length||newDTs.length||newLocs.length||newDepts.length) ?
+      `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:12px;color:#92400e">
+        <div style="font-weight:700;margin-bottom:4px">&#9889; New values will be added to your lists:</div>
+        ${newTags.length?"<div>&#127991; Tags: "+newTags.join(", ")+"</div>":""}
+        ${newDTs.length?"<div>&#128196; Doc Types: "+newDTs.join(", ")+"</div>":""}
+        ${newLocs.length?"<div>&#128205; Locations: "+newLocs.join(", ")+"</div>":""}
+        ${newDepts.length?"<div>&#127981; Departments: "+newDepts.join(", ")+"</div>":""}
+      </div>` : "";
+
+    const catSummary = CATS.filter(c=>catCounts[c.id]>0).map(c=>
+      `<div class="import-summary-box"><div class="isb-count" style="color:${c.color}">${catCounts[c.id]}</div><div class="isb-label">${c.icon} ${c.short}</div></div>`
+    ).join("");
+
+    document.getElementById("import-preview-area").innerHTML =
+      `<div style="margin-top:12px">
+        <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">
+          Found <span style="color:#2563eb">${letters.length}</span> letters across ${Object.values(catCounts).filter(v=>v>0).length} categories:
+        </div>
+        <div class="import-summary">${catSummary}</div>
+        ${newInfo}
+        <div style="font-size:12px;color:#64748b;margin-top:10px;margin-bottom:6px;font-weight:600">How to import:</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-primary" style="flex:1;min-width:110px;padding:9px;font-size:12px" onclick="doImport(false)">
+            + Add to existing (${ST.letters.length})
+          </button>
+          <button style="flex:1;min-width:110px;background:#f0fdf4;color:#047857;border:1.5px solid #6ee7b7;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer" onclick="doImport('update')">
+            Edit: Update existing
+          </button>
+          <button style="flex:1;min-width:110px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm('Replace ALL ${ST.letters.length} letters? This cannot be undone.'))doImport(true)">
+            Replace all
+          </button>
+        </div>
+      </div>`;
+  };
+  reader.readAsText(file);
+}
+
+function doImport(mode){
+  const letters = window._pendingImport || [];
+  if(!letters.length){alert('No import data found.');return;}
+  const allNewTags=[...new Set(letters.flatMap(l=>l.tags||[]))];
+  const allNewDTs=[...new Set(letters.flatMap(l=>l.docTypes||[]))];
+  const allNewLocs=[...new Set(letters.flatMap(l=>l.locations||[]))];
+  const allNewDepts=[...new Set(letters.map(l=>l.department).filter(Boolean))];
+  ST.allTags=[...new Set([...ST.allTags,...allNewTags])];
+  ST.allDocTypes=[...new Set([...ST.allDocTypes,...allNewDTs])];
+  ST.allLocations=[...new Set([...ST.allLocations,...allNewLocs])];
+  ST.allDepts=[...new Set([...ST.allDepts,...allNewDepts])];
+  letters.forEach(l=>{ if(!l.sinoReplies) l.sinoReplies=[]; });
+  // Auto-classify any imported letter that has no doc types yet
+  letters.forEach(l=>{ if(!l.docTypes||!l.docTypes.length) l.docTypes=autoDetectDocTypes(l); });
+  // Absorb any newly detected doc types into the master list
+  const autoDetectedDTs=[...new Set(letters.flatMap(l=>l.docTypes||[]))].filter(t=>!ST.allDocTypes.includes(t));
+  if(autoDetectedDTs.length) ST.allDocTypes=[...ST.allDocTypes,...autoDetectedDTs];
+  let finalLetters, summary;
+  if(mode===true){
+    finalLetters=letters.map(l=>({...l,id:l.id||Date.now()+'_'+Math.random().toString(36).slice(2,5)}));
+    summary='Replaced all data with '+finalLetters.length+' letters.';
+  } else if(mode==='update'){
+    const byNum={};
+    ST.letters.forEach(l=>{ byNum[(l.letterNumber||'').toLowerCase()]=l; });
+    let updated=0,added=0;
+    letters.forEach(imp=>{
+      const key=(imp.letterNumber||'').toLowerCase();
+      if(byNum[key]){
+        const ex=byNum[key];
+        byNum[key]={...ex,...imp,id:ex.id,
+          letterUrl:imp.letterUrl||ex.letterUrl||'',
+          attachments:(imp.attachments&&imp.attachments.length)?imp.attachments:(ex.attachments||[]),
+          pendingStatus:ex.pendingStatus||''};
+        updated++;
+      } else {
+        byNum[key]={...imp,id:Date.now()+'_'+Math.random().toString(36).slice(2,5)};
+        added++;
+      }
+    });
+    finalLetters=Object.values(byNum);
+    summary='Updated '+updated+' letters, added '+added+' new.\nTotal: '+finalLetters.length;
+  } else {
+    const existing=new Set(ST.letters.map(l=>(l.letterNumber||'').toLowerCase()));
+    const toAdd=letters.filter(l=>!existing.has((l.letterNumber||'').toLowerCase()));
+    const skipped=letters.length-toAdd.length;
+    finalLetters=[...ST.letters,...toAdd.map(l=>({...l,id:Date.now()+'_'+Math.random().toString(36).slice(2,5)}))];
+    summary='Added '+toAdd.length+' new letters.'+(skipped?' Skipped '+skipped+' duplicates.':'')+' Total: '+finalLetters.length;
+  }
+  ST.letters=finalLetters;
+  initPendingForLatest(ST.letters, 20);
+  _invalidateCache();
+  persist();closeM();render();
+  alert('Import complete!\n'+summary);
+}
+
+
+// ═══ CALENDAR MODULE ═════════════════════════════════════════════════════════
+
+// Fixed department list shown in calendar filter
+const CAL_FIXED_DEPTS = ['Contract','QA','QC','Social','HSE/EHS','Survey','Purchase','Geology','Design','Admin'];
+
+// Match a letter's department against a filter value.
+// Both the filter and the letter's department are split by "/" for individual-part matching.
+// "HSE/EHS" filter matches any letter whose dept contains "HSE" OR "EHS" (or both).
+// "QA/Survey/QC" letter matches the "QA", "Survey", or "QC" filters individually.
+function calDeptMatches(l, df){
+  if(!df) return true;
+  const dept = (l.department||'').trim();
+  if(!dept) return false;
+  const deptParts = dept.split('/').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  const filterParts = df.split('/').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  return filterParts.some(fp => deptParts.includes(fp));
+}
+
+const CAL = {
+  year:  new Date().getFullYear(),
+  month: new Date().getMonth(),   // 0-indexed
+  selectedDate: null,
+  dateSearch: '',
+  showYearPicker: false,
+  view: 'day',        // 'day' | 'week' | 'month'
+  deptFilter: '',     // '' = all departments
+  customDepts: [],    // user-added departments
+  pendingCal: '',     // '' | 'pending' | 'replied'
+  weekStart: null,    // ISO date of the Sunday of selected week
+};
+const MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+
+// Build map: "YYYY-MM-DD" → {incoming:[], outgoing:[], other:[]}
+function buildDateMap(){
+  const m = {};
+  ST.letters.forEach(l => {
+    const d = (l.sendDate||"").slice(0,10);
+    if(!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    if(!m[d]) m[d] = {incoming:[], outgoing:[], other:[]};
+    const cat = l.category||"incoming";
+    if(cat==="incoming"||cat==="gov_in")        m[d].incoming.push(l);
+    else if(cat==="outgoing"||cat==="gov_out")  m[d].outgoing.push(l);
+    else                                         m[d].other.push(l);
+  });
+  return m;
+}
+
+function openCalendar(){
+  document.getElementById("cal-overlay").classList.add("open");
+  renderCalendar();
+}
+function closeCalendar(){
+  document.getElementById("cal-overlay").classList.remove("open");
+  document.getElementById("year-picker").style.display="none";
+}
+function calNav(dir){
+  CAL.month += dir;
+  if(CAL.month > 11){ CAL.month=0; CAL.year++; }
+  if(CAL.month < 0) { CAL.month=11; CAL.year--; }
+  renderCalendar();
+}
+function calGoToday(){
+  const now = new Date();
+  CAL.year = now.getFullYear();
+  CAL.month = now.getMonth();
+  CAL.selectedDate = now.toISOString().slice(0,10);
+  renderCalendar();
+  if(CAL.selectedDate) renderDatePanel(CAL.selectedDate);
+}
+let _jpSelectedMonth = null; // 0-indexed month selected in picker
+
+function toggleYearPicker(){
+  const yp = document.getElementById("year-picker");
+  CAL.showYearPicker = !CAL.showYearPicker;
+  if(CAL.showYearPicker){
+    _jpSelectedMonth = CAL.month;
+    const inp = document.getElementById("jp-year-inp");
+    if(inp) inp.value = CAL.year;
+    yp.style.display="block";
+    renderJpMonths();
+  } else {
+    yp.style.display="none";
+  }
+}
+
+function jpYearStep(dir){
+  const inp = document.getElementById("jp-year-inp");
+  if(!inp) return;
+  inp.value = parseInt(inp.value) + dir;
+  renderJpMonths();
+}
+
+function renderJpMonths(){
+  const inp = document.getElementById("jp-year-inp");
+  const yr  = parseInt(inp?.value || CAL.year);
+  const dateMap = buildDateMap();
+  const el = document.getElementById("jp-months");
+  if(!el) return;
+  const mnames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  el.innerHTML = mnames.map((m,i)=>{
+    const prefix = yr+"-"+(i+1<10?"0":"")+(i+1);
+    const hasL = Object.keys(dateMap).some(d=>d.startsWith(prefix));
+    const isActive = i===_jpSelectedMonth && yr===parseInt(inp?.value||CAL.year);
+    return `<button onclick="jpSelectMonth(${i})" class="${isActive?"active":hasL?"has-letters":""}">${m}</button>`;
+  }).join("");
+}
+
+function jpSelectMonth(m){
+  _jpSelectedMonth = m;
+  const inp = document.getElementById("jp-year-inp");
+  const yr  = parseInt(inp?.value || CAL.year);
+  CAL.year  = yr;
+  CAL.month = m;
+  CAL.view  = 'month';
+  CAL.weekStart = null;
+  CAL.showYearPicker = false;
+  document.getElementById("year-picker").style.display = "none";
+  renderCalendar();
+  renderMonthPanel(yr, m);
+}
+
+function applyJump(){
+  const inp = document.getElementById("jp-year-inp");
+  const yr  = parseInt(inp?.value || CAL.year);
+  const mo  = _jpSelectedMonth !== null ? _jpSelectedMonth : CAL.month;
+  CAL.year  = yr;
+  CAL.month = mo;
+  CAL.view  = 'month';
+  CAL.weekStart = null;
+  CAL.showYearPicker = false;
+  document.getElementById("year-picker").style.display = "none";
+  renderCalendar();
+  renderMonthPanel(yr, mo);
+}
+
+function jumpToDate(dateStr){
+  if(!dateStr) return;
+  const [y,m,d] = dateStr.split("-").map(Number);
+  CAL.year  = y;
+  CAL.month = m-1;
+  CAL.selectedDate = dateStr;
+  renderCalendar();
+  renderDatePanel(dateStr);
+}
+function selectCalDate(dateStr){
+  CAL.selectedDate = dateStr;
+  CAL.view = 'day';
+  CAL.weekStart = null;
+  renderCalendarGrid();
+  renderDatePanel(dateStr);
+}
+
+function renderCalendar(){
+  // Title
+  document.getElementById("cal-month-title").textContent = MONTHS[CAL.month]+" "+CAL.year;
+  renderCalendarGrid();
+  renderCalStats();
+  if(CAL.selectedDate) renderDatePanel(CAL.selectedDate);
+}
+
+function renderCalStats(){
+  const dateMap = buildDateMap();
+  const prefix = CAL.year+"-"+(CAL.month+1<10?"0":"")+(CAL.month+1);
+  const daysInMonth = Object.keys(dateMap).filter(d=>d.startsWith(prefix));
+  let totalIn=0,totalOut=0,totalOther=0,activeDays=daysInMonth.length;
+  daysInMonth.forEach(d=>{
+    totalIn   += dateMap[d].incoming.length;
+    totalOut  += dateMap[d].outgoing.length;
+    totalOther += (dateMap[d].other||[]).length;
+  });
+  const el = document.getElementById("cal-stats");
+  if(el) el.innerHTML = `
+    <span class="cal-stat-pill" style="color:#10b981">↑ ${totalOut} Outgoing</span>
+    <span class="cal-stat-pill" style="color:#0ea5e9">↓ ${totalIn} Incoming</span>
+    ${totalOther?`<span class="cal-stat-pill" style="color:#8b5cf6">📋 ${totalOther} Other</span>`:""}
+    <span class="cal-stat-pill" style="color:#94a3b8">${activeDays} active days</span>
+  `;
+}
+
+function renderCalendarGrid(){
+  const dateMap = buildDateMap();
+  const today   = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(CAL.year, CAL.month, 1);
+  const daysInMonth = new Date(CAL.year, CAL.month+1, 0).getDate();
+  const startDow = firstDay.getDay(); // 0=Sun
+
+  let cells = [];
+  for(let i=0;i<startDow;i++) cells.push(null);
+  for(let d=1;d<=daysInMonth;d++) cells.push(d);
+  while(cells.length%7!==0) cells.push(null);
+
+  let weeksHTML = "";
+  for(let w=0;w<cells.length;w+=7){
+    // Compute the Sunday that starts this calendar row (may be in previous month)
+    const sundayDayNum = w - startDow + 1;
+    const weekSundayD = new Date(CAL.year, CAL.month, sundayDayNum);
+    const weekFirstDate = weekSundayD.getFullYear()+'-'+String(weekSundayD.getMonth()+1).padStart(2,'0')+'-'+String(weekSundayD.getDate()).padStart(2,'0');
+    const rowHasDay = cells.slice(w, w+7).some(c=>c!==null);
+    const isWeekSel = CAL.view==='week' && CAL.weekStart===weekFirstDate;
+    weeksHTML += `<div class="cal-week${isWeekSel?' week-selected':''}" onclick="${rowHasDay?`selectCalWeek('${weekFirstDate}')`:''}" title="${rowHasDay?'Click row to view full week':''}">`;
+    for(let i=w;i<w+7;i++){
+      const day = cells[i];
+      if(!day){ weeksHTML+='<div class="cal-day empty"></div>'; continue; }
+      const mm = (CAL.month+1<10?"0":"")+(CAL.month+1);
+      const dd = (day<10?"0":"")+day;
+      const dateStr = CAL.year+"-"+mm+"-"+dd;
+      const data = dateMap[dateStr];
+      const isToday    = dateStr===today;
+      const isSelected = dateStr===CAL.selectedDate;
+      const hasLetters = !!data;
+      let cls = "cal-day";
+      if(isToday)    cls+=" today";
+      if(isSelected) cls+=" selected";
+      if(hasLetters) cls+=" has-letters";
+
+      let dotsHTML="", countHTML="";
+      if(data){
+        const total = data.incoming.length+data.outgoing.length+(data.other||[]).length;
+        const maxDots = 5;
+        let dots=[];
+        for(let k=0;k<Math.min(data.outgoing.length,2);k++) dots.push("#10b981");
+        for(let k=0;k<Math.min(data.incoming.length,2);k++) dots.push("#0ea5e9");
+        for(let k=0;k<Math.min((data.other||[]).length,1);k++) dots.push("#8b5cf6");
+        dots = dots.slice(0,maxDots);
+        dotsHTML = '<div class="cd-dots">'+dots.map(c=>`<div class="cd-dot" style="background:${c}"></div>`).join("")+"</div>";
+        countHTML = `<div class="cd-count">${total} letter${total!==1?"s":""}</div>`;
+      }
+
+      const numHTML = isToday
+        ? `<div class="cd-num"><span style="background:#1e40af;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:#60a5fa;font-size:11px">${day}</span></div>`
+        : `<div class="cd-num">${day}</div>`;
+
+      // Days with letters/today stop propagation so clicking them shows the day (not week)
+      const dayClick = (hasLetters||isToday)
+        ? `event.stopPropagation();selectCalDate('${dateStr}')`
+        : ``;
+      weeksHTML += `<div class="${cls}" onclick="${dayClick}" style="${!hasLetters&&!isToday?'cursor:default':''}">${numHTML}${dotsHTML}${countHTML}</div>`;
+    }
+    weeksHTML += "</div>";
+  }
+  const el = document.getElementById("cal-weeks");
+  if(el) el.innerHTML = weeksHTML;
+}
+
+function renderDatePanel(dateStr){
+  const dateMap = buildDateMap();
+  const data = dateMap[dateStr] || {incoming:[],outgoing:[],other:[]};
+  const allLetters = [...data.incoming,...data.outgoing,...(data.other||[])];
+  const total = allLetters.length;
+
+  // Format date nicely
+  const [y,m,d] = dateStr.split("-");
+  const dateObj = new Date(y,m-1,d);
+  const niceDateStr = dateObj.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  const panel = document.getElementById("cal-right");
+
+  // Merge 'other' letters into incoming so ALL letters are visible in the panel.
+  // The two-column layout shows: Outgoing (left) | Incoming + Other (right)
+  // Apply department filter
+  const _df = CAL.deptFilter;
+  const panelOutgoing = applyCalPendingFilter([...(data.outgoing||[])].filter(l=>calDeptMatches(l,_df)), false);
+  const panelIncoming = applyCalPendingFilter([...(data.incoming||[]),...(data.other||[])].filter(l=>calDeptMatches(l,_df)), true);
+
+  function section(title, color, icon, letters, searchQ){
+    if(!letters.length) return "";
+    const filtered = searchQ
+      ? letters.filter(l=>(l.letterNumber+l.subject+(l.tags||[]).join(" ")).toLowerCase().includes(searchQ))
+      : letters;
+    if(!filtered.length) return "";
+    return `<div class="dp-section-hd" style="color:${color}"><span style="background:${color}22;color:${color};padding:1px 8px;border-radius:20px;font-size:10px">${icon} ${title}</span><span style="color:#94a3b8;font-weight:400;font-size:10px">${filtered.length} letter${filtered.length!==1?"s":""}</span></div>
+    ${filtered.map(l=>calCardHTML(l)).join("")}`;
+  }
+
+  const weekSunday = getSundayOf(dateStr);
+  const deptBar = buildDeptBar('day');
+  panel.innerHTML = `
+    <div class="dp-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0 0 4px">${niceDateStr}</h2>
+          <div class="dp-meta">
+            ${panelOutgoing.length?`<span class="dp-badge" style="background:#d1fae5;color:#047857">↑ ${panelOutgoing.length} Outgoing</span>`:""}
+            ${panelIncoming.length?`<span class="dp-badge" style="background:#e0f2fe;color:#0369a1">↓ ${panelIncoming.length} Incoming</span>`:""}
+            ${!total&&!_df?`<span style="color:#94a3b8;font-size:12px">No letters on this date</span>`:""}
+            ${_df?`<span class="dp-badge" style="background:#fef9c3;color:#854d0e">🏬 ${esc(_df)}</span>`:""}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <div class="dp-view-tabs">
+            <button class="dp-view-tab active">Day</button>
+            <button class="dp-view-tab" onclick="selectCalWeek('${weekSunday}')">Week</button>
+            <button class="dp-view-tab" onclick="renderMonthPanel(${CAL.year},${CAL.month})">Month</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${deptBar}
+    ${(data.incoming.length||data.outgoing.length)?`<div class="dp-search"><input id="dp-search-inp" placeholder="🔍  Search letters for this date…" oninput="filterDateLetters('${dateStr}',this.value)"/></div>`:""}
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column" id="dp-letters-wrap">
+    ${total?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;border-top:1px solid #e2e8f0">
+      <!-- LEFT: Outgoing -->
+      <div style="border-right:2px solid #e2e8f0;display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#f0fdf4;border-bottom:2px solid #10b981;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#047857;text-transform:uppercase;letter-spacing:.8px">↑ Outgoing</span>
+          <span style="background:#d1fae5;color:#047857;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${panelOutgoing.length}</span>
+        </div>
+        <div class="dp-letters" id="dp-outgoing" style="flex:1;overflow-y:auto;padding:10px 10px">
+          ${panelOutgoing.length
+            ? panelOutgoing.map(l=>calCardHTML(l)).join("")
+            : `<div class="dp-empty" style="margin:0">No outgoing letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+      <!-- RIGHT: Incoming + Other -->
+      <div style="display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#eff6ff;border-bottom:2px solid #0ea5e9;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#0369a1;text-transform:uppercase;letter-spacing:.8px">↓ Incoming</span>
+          <span style="background:#dbeafe;color:#1e40af;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${panelIncoming.length}</span>
+        </div>
+        <div class="dp-letters" id="dp-incoming" style="flex:1;overflow-y:auto;padding:10px 10px">
+          ${panelIncoming.length
+            ? panelIncoming.map(l=>calCardHTML(l)).join("")
+            : `<div class="dp-empty" style="margin:0">No incoming letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+    </div>
+    ` : `<div class="dp-empty" style="margin:20px">📭 No letters recorded for this date${_df?' in department: '+esc(_df):''}</div>`}
+    </div>`;
+}
+
+function filterDateLetters(dateStr, q){
+  const sq = q.toLowerCase().trim();
+  const dateMap = buildDateMap();
+  const data = dateMap[dateStr] || {incoming:[],outgoing:[],other:[]};
+  const _df = CAL.deptFilter;
+  const allOut=[...(data.outgoing||[])].filter(l=>calDeptMatches(l,_df));
+  const allIn=[...(data.incoming||[]),...(data.other||[])].filter(l=>calDeptMatches(l,_df));
+  const outCol=document.getElementById("dp-outgoing");
+  const inCol=document.getElementById("dp-incoming");
+  if(outCol){
+    const fout=sq?allOut.filter(l=>(l.letterNumber+l.subject+(l.tags||[]).join("")+(l.docTypes||[]).join("")).toLowerCase().includes(sq)):allOut;
+    outCol.innerHTML=fout.length?fout.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No results</div>`;
+  }
+  if(inCol){
+    const fin=sq?allIn.filter(l=>(l.letterNumber+l.subject+(l.tags||[]).join("")+(l.docTypes||[]).join("")).toLowerCase().includes(sq)):allIn;
+    inCol.innerHTML=fin.length?fin.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No results</div>`;
+  }
+}
+
+// ── Shared card renderer (used by day/week/month panels) ────────────────────
+function calCardHTML(l){
+  const cat=catOf(l.category);
+  const sc=STATUSES[l.status]||{};
+  const tgs=(l.tags||[]).slice(0,3).map(t=>`<span style="background:${tc(t)}22;border:1px solid ${tc(t)}55;color:${tc(t)};border-radius:20px;padding:1px 7px;font-size:10px;font-weight:600">${esc(t)}</span>`).join("");
+  const dts=(l.docTypes||[]).slice(0,2).map(t=>`<span style="background:#f1f5f9;color:#475569;border-radius:5px;padding:1px 6px;font-size:10px">${esc(t)}</span>`).join("");
+  const lnoHTML = l.letterUrl
+    ? `<a href="${esc(l.letterUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="dc-lno dc-lno-link" style="color:${cat.color}">${esc(l.letterNumber)}<span class="dc-open-badge">Open ↗</span></a>`
+    : `<span class="dc-lno" style="color:${cat.color}">${esc(l.letterNumber)}</span>`;
+  return `<div class="dp-card" onclick="calOpenDetail('${l.id}')">
+    <button class="dc-chain-btn" onclick="event.stopPropagation();calOpenChain('${l.id}')">🔗 Chain</button>
+    <div class="dc-top">
+      ${lnoHTML}
+      <span style="background:${cat.bg};color:${cat.dark};border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700">${cat.icon} ${cat.short}</span>
+      ${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg};font-size:10px">${l.status}</span>`:""}
+      ${isPending(l)?`<span class="pending-badge is-pending" style="font-size:9px;padding:1px 5px">⏳ Pending</span>`:""}
+    </div>
+    <div class="dc-sub">${esc(cleanTxt(l.subject))}</div>
+    <div class="dc-tags">${dts}${tgs}</div>
+    <div class="dc-meta">
+      ${l.department?`<span>🏬 ${esc(l.department)}</span>`:""}
+      ${l.sendDate?`<span>📅 ${fmtD(l.sendDate)}</span>`:""}
+      ${(l.replyRefs||[]).length?`<span>🔗 ${l.replyRefs.length} ref${l.replyRefs.length>1?"s":""}</span>`:""}
+    </div>
+  </div>`;
+}
+
+// ── Department filter helpers ─────────────────────────────────────────────────
+function buildDeptBar(view){
+  const depts=[...CAL_FIXED_DEPTS,...(CAL.customDepts||[])];
+  const opts=`<option value="">All Departments</option>`
+    +depts.map(d=>`<option value="${esc(d)}"${CAL.deptFilter===d?' selected':''}>${esc(d)}</option>`).join('');
+  const pc=CAL.pendingCal;
+  const customChips=(CAL.customDepts||[]).map(d=>{
+    const active=CAL.deptFilter===d;
+    return `<span style="display:inline-flex;align-items:center;gap:2px;background:${active?'#2563eb':'#1e293b'};color:${active?'white':'#94a3b8'};border:1px solid ${active?'#2563eb':'#475569'};border-radius:5px;padding:2px 6px 2px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap"
+      onclick="calSetDeptFilter('${esc(d)}','${view}')">${esc(d)}<button
+      onclick="event.stopPropagation();calRemoveCustomDept('${esc(d)}','${view}')"
+      style="background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 4px;opacity:.75" title="Remove">×</button></span>`;
+  }).join('');
+  return `<div class="dp-dept-bar">
+    <label>🏬 Dept</label>
+    <select class="dp-dept-sel" onchange="calSetDeptFilter(this.value,'${view}')">${opts}</select>
+    <input type="text" placeholder="＋ dept…"
+      style="width:80px;padding:3px 7px;border:1px solid #334155;border-radius:6px;background:#1e293b;color:white;font-size:11px;outline:none"
+      title="Type a department name and press Enter to add it to the filter"
+      onkeydown="if(event.key==='Enter'){const v=this.value.trim();if(v){calAddCustomDept(v,'${view}');this.value='';}}"/>
+    ${CAL.deptFilter?`<button onclick="calSetDeptFilter('','${view}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer">✕ Dept</button>`:''}
+    <div style="display:flex;gap:4px;margin-left:4px;flex-wrap:wrap">
+      <button onclick="calSetPendingFilter('pending','${view}')" class="cal-pending-btn ${pc==='pending'?'active-pending':'inactive'}">⏳ Pending</button>
+      <button onclick="calSetPendingFilter('replied','${view}')" class="cal-pending-btn ${pc==='replied'?'active-replied':'inactive'}">✓ Replied</button>
+      ${pc?`<button onclick="calSetPendingFilter('','${view}')" class="cal-pending-btn inactive" style="background:#fef2f2;color:#dc2626;border-color:#fecaca">✕</button>`:''}
+    </div>
+    ${customChips?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;width:100%">${customChips}</div>`:''}
+  </div>`;
+}
+
+function calAddCustomDept(name, view){
+  if(!CAL.customDepts) CAL.customDepts=[];
+  const norm=name.trim();
+  if(norm&&!CAL.customDepts.includes(norm)&&!CAL_FIXED_DEPTS.includes(norm))
+    CAL.customDepts.push(norm);
+  calSetDeptFilter(norm, view);
+}
+
+function calRemoveCustomDept(name, view){
+  CAL.customDepts=(CAL.customDepts||[]).filter(d=>d!==name);
+  if(CAL.deptFilter===name) CAL.deptFilter='';
+  calSetDeptFilter(CAL.deptFilter, view);
+}
+
+function calSetDeptFilter(val, view){
+  CAL.deptFilter = val;
+  if(view==='month') renderMonthPanel(CAL.year, CAL.month);
+  else if(view==='week'&&CAL.weekStart) renderWeekPanel(CAL.weekStart);
+  else if(view==='day'&&CAL.selectedDate) renderDatePanel(CAL.selectedDate);
+}
+
+function calSetPendingFilter(val, view){
+  CAL.pendingCal = val;
+  if(view==='month') renderMonthPanel(CAL.year, CAL.month);
+  else if(view==='week'&&CAL.weekStart) renderWeekPanel(CAL.weekStart);
+  else if(view==='day'&&CAL.selectedDate) renderDatePanel(CAL.selectedDate);
+}
+
+function applyCalPendingFilter(letters, isIncoming){
+  if(!CAL.pendingCal||!isIncoming) return letters;
+  if(CAL.pendingCal==='pending')  return letters.filter(l=>isPending(l));
+  if(CAL.pendingCal==='replied')  return letters.filter(l=>(l.sinoReplies||[]).length>0||(l.pendingStatus==='cleared'&&l.category==='incoming'));
+  return letters;
+}
+
+// ── Week view ─────────────────────────────────────────────────────────────────
+function getSundayOf(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()-d.getDay());
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function selectCalWeek(weekStartDate){
+  CAL.weekStart = weekStartDate;
+  CAL.view = 'week';
+  CAL.selectedDate = null;
+  renderCalendarGrid();
+  renderWeekPanel(weekStartDate);
+}
+
+function renderWeekPanel(weekStart){
+  const dateMap = buildDateMap();
+  const startD = new Date(weekStart+'T00:00:00');
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(startD); d.setDate(d.getDate()+i);
+    days.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+  }
+
+  const _df = CAL.deptFilter;
+  let allOut=[], allIn=[];
+  days.forEach(ds=>{
+    const data=dateMap[ds]||{};
+    (data.outgoing||[]).forEach(l=>{ if(calDeptMatches(l,_df)) allOut.push(l); });
+    [...(data.incoming||[]),...(data.other||[])].forEach(l=>{ if(calDeptMatches(l,_df)) allIn.push(l); });
+  });
+  allOut=applyCalPendingFilter(allOut,false);
+  allIn=applyCalPendingFilter(allIn,true);
+
+  const endD=new Date(startD); endD.setDate(endD.getDate()+6);
+  const endDateStr=endD.getFullYear()+'-'+String(endD.getMonth()+1).padStart(2,'0')+'-'+String(endD.getDate()).padStart(2,'0');
+  const weekLabel=fmtD(weekStart)+' – '+fmtD(endDateStr);
+  const total=allOut.length+allIn.length;
+  const deptBar=buildDeptBar('week');
+  const panel=document.getElementById("cal-right");
+
+  panel.innerHTML=`
+    <div class="dp-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">📅 Week View</div>
+          <h2 style="margin:0 0 4px;font-size:14px">${weekLabel}</h2>
+          <div class="dp-meta">
+            ${allOut.length?`<span class="dp-badge" style="background:#d1fae5;color:#047857">↑ ${allOut.length} Outgoing</span>`:''}
+            ${allIn.length?`<span class="dp-badge" style="background:#e0f2fe;color:#0369a1">↓ ${allIn.length} Incoming</span>`:''}
+            ${!total?`<span style="color:#94a3b8;font-size:12px">No letters this week</span>`:''}
+            ${_df?`<span class="dp-badge" style="background:#fef9c3;color:#854d0e">🏬 ${esc(_df)}</span>`:''}
+          </div>
+        </div>
+        <div class="dp-view-tabs">
+          <button class="dp-view-tab" onclick="if(CAL.selectedDate)renderDatePanel(CAL.selectedDate);else selectCalDate('${weekStart}')">Day</button>
+          <button class="dp-view-tab active">Week</button>
+          <button class="dp-view-tab" onclick="renderMonthPanel(${CAL.year},${CAL.month})">Month</button>
+        </div>
+      </div>
+    </div>
+    ${deptBar}
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    ${total?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;border-top:1px solid #e2e8f0">
+      <div style="border-right:2px solid #e2e8f0;display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#f0fdf4;border-bottom:2px solid #10b981;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#047857;text-transform:uppercase;letter-spacing:.8px">↑ Outgoing</span>
+          <span style="background:#d1fae5;color:#047857;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${allOut.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:10px">
+          ${allOut.length?allOut.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No outgoing letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#eff6ff;border-bottom:2px solid #0ea5e9;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#0369a1;text-transform:uppercase;letter-spacing:.8px">↓ Incoming</span>
+          <span style="background:#dbeafe;color:#1e40af;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${allIn.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:10px">
+          ${allIn.length?allIn.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No incoming letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+    </div>
+    `:`<div class="dp-empty" style="margin:20px">📭 No letters this week${_df?' in department: '+esc(_df):''}</div>`}
+    </div>`;
+}
+
+// ── Month view ────────────────────────────────────────────────────────────────
+function renderMonthPanel(year, month){
+  CAL.view = 'month';
+  CAL.year = year;
+  CAL.month = month;
+  const dateMap = buildDateMap();
+  const prefix = year+'-'+(month+1<10?'0':'')+(month+1);
+  const _df = CAL.deptFilter;
+  let allOut=[], allIn=[];
+  Object.keys(dateMap).filter(d=>d.startsWith(prefix)).sort().forEach(ds=>{
+    const data=dateMap[ds];
+    (data.outgoing||[]).forEach(l=>{ if(calDeptMatches(l,_df)) allOut.push(l); });
+    [...(data.incoming||[]),...(data.other||[])].forEach(l=>{ if(calDeptMatches(l,_df)) allIn.push(l); });
+  });
+  allOut=applyCalPendingFilter(allOut,false);
+  allIn=applyCalPendingFilter(allIn,true);
+
+  const total=allOut.length+allIn.length;
+  const monthLabel=MONTHS[month]+' '+year;
+  const deptBar=buildDeptBar('month');
+  const panel=document.getElementById("cal-right");
+
+  panel.innerHTML=`
+    <div class="dp-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">📆 Month View</div>
+          <h2 style="margin:0 0 4px">${monthLabel}</h2>
+          <div class="dp-meta">
+            ${allOut.length?`<span class="dp-badge" style="background:#d1fae5;color:#047857">↑ ${allOut.length} Outgoing</span>`:''}
+            ${allIn.length?`<span class="dp-badge" style="background:#e0f2fe;color:#0369a1">↓ ${allIn.length} Incoming</span>`:''}
+            ${!total?`<span style="color:#94a3b8;font-size:12px">No letters this month</span>`:''}
+            ${_df?`<span class="dp-badge" style="background:#fef9c3;color:#854d0e">🏬 ${esc(_df)}</span>`:''}
+          </div>
+        </div>
+        <div class="dp-view-tabs">
+          <button class="dp-view-tab" onclick="if(CAL.selectedDate)renderDatePanel(CAL.selectedDate);else selectCalDate('${year}-${String(month+1).padStart(2,'0')}-01')">Day</button>
+          <button class="dp-view-tab" onclick="renderWeekPanel(CAL.weekStart||getSundayOf(CAL.year+'-'+String(CAL.month+1).padStart(2,'0')+'-01'))">Week</button>
+          <button class="dp-view-tab active">Month</button>
+        </div>
+      </div>
+    </div>
+    ${deptBar}
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    ${total?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;border-top:1px solid #e2e8f0">
+      <div style="border-right:2px solid #e2e8f0;display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#f0fdf4;border-bottom:2px solid #10b981;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#047857;text-transform:uppercase;letter-spacing:.8px">↑ Outgoing</span>
+          <span style="background:#d1fae5;color:#047857;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${allOut.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:10px">
+          ${allOut.length?allOut.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No outgoing letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;overflow:hidden">
+        <div style="background:#eff6ff;border-bottom:2px solid #0ea5e9;padding:10px 14px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:800;color:#0369a1;text-transform:uppercase;letter-spacing:.8px">↓ Incoming</span>
+          <span style="background:#dbeafe;color:#1e40af;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700">${allIn.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:10px">
+          ${allIn.length?allIn.map(l=>calCardHTML(l)).join(""):`<div class="dp-empty" style="margin:0">No incoming letters${_df?' for '+esc(_df):''}</div>`}
+        </div>
+      </div>
+    </div>
+    `:`<div class="dp-empty" style="margin:20px">📭 No letters in ${monthLabel}${_df?' for department: '+esc(_df):''}</div>`}
+    </div>`;
+}
+
+// ── Calendar popups (z-index 9999, always on top) ────────────────────────────
+function closeChainPopup(){
+  const p=document.getElementById("chain-popup");
+  if(p){p.style.display="none";p.innerHTML="";}
+}
+
+function calOpenChain(id){
+  const letter=ST.letters.find(l=>l.id===id);
+  if(!letter)return;
+  const chain=buildChain(letter);
+  const popup=document.getElementById("chain-popup");
+  if(!popup)return;
+
+  const MAX_SHOW=40;
+  let cardsHTML="";
+  chain.forEach((l,i)=>{
+    const cat=catOf(l.category);
+    const sc=STATUSES[l.status]||{};
+    const isCurrent=l.id===id;
+    const refs=[
+      ...(l.replyRefs||[]).map(r=>({r,label:"Reply to",color:"#0369a1"})),
+      ...(l.engineerReplies||[]).map(r=>({r,label:"Eng.Reply",color:"#c2410c"})),
+      ...(l.sinoReplies||[]).map(r=>({r,label:"Sino.Reply",color:"#047857"})),
+      ...(l.engineerRefs||[]).map(r=>({r,label:"Eng.Ref",color:"#92400e"})),
+    ].slice(0,5);
+    cardsHTML+=`
+    <div style="display:flex;gap:12px;margin-bottom:8px">
+      <div style="color:#64748b;font-size:11px;width:80px;flex-shrink:0;text-align:right;padding-top:14px">${fmtD(l.sendDate)||"—"}</div>
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="width:12px;height:12px;border-radius:50%;border:2px solid ${cat.color};background:${isCurrent?cat.color:"white"};margin-top:12px;flex-shrink:0"></div>
+        ${i<chain.length-1?`<div style="width:2px;flex:1;min-height:24px;background:linear-gradient(${cat.color},${catOf(chain[i+1].category).color});margin-top:2px"></div>`:""}
+      </div>
+      <div onclick="calOpenDetail('${l.id}')" style="flex:1;background:white;border:${isCurrent?`2px solid ${cat.color}`:"1px solid #e2e8f0"};border-radius:10px;padding:12px 14px;cursor:pointer;margin-bottom:${i<chain.length-1?0:0}px;transition:all .12s;${isCurrent?`box-shadow:0 0 0 3px ${cat.color}22`:""}" onmouseover="this.style.borderColor='${cat.color}'" onmouseout="this.style.borderColor='${isCurrent?cat.color:"#e2e8f0"}'">
+        <div style="font-size:14px;font-weight:700;color:#0f172a;line-height:1.4;margin-bottom:6px">${esc(l.subject)}</div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+          <span style="font-family:monospace;font-weight:800;font-size:11px;color:${cat.color}">${esc(l.letterNumber)}</span>
+          <span style="background:${cat.bg};color:${cat.dark};border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700">${cat.icon} ${cat.short}</span>
+          ${l.status?`<span style="background:${sc.bg||"#f1f5f9"};color:${sc.fg||"#475569"};border-radius:8px;padding:2px 7px;font-size:10px;font-weight:700">${l.status}</span>`:""}
+          ${isCurrent?`<span style="font-size:10px;font-weight:700;color:${cat.color};margin-left:auto">← viewing</span>`:""}
+        </div>
+        ${refs.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${refs.map(({r,label,color})=>`<span style="font-family:monospace;font-size:10px;padding:1px 7px;border-radius:4px;border:1px solid ${color}44;color:${color};background:${color}11">${label}: ${esc(r)}</span>`).join("")}</div>`:""}
+      </div>
+    </div>`;
+  });
+
+  popup.innerHTML=`
+    <div style="max-width:700px;margin:0 auto;background:#f8fafc;border-radius:16px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.4)">
+      <div style="background:#0f172a;padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:white;margin-bottom:3px">🔗 Correspondence Chain</div>
+          <div style="font-size:12px;color:#64748b">${chain.length} connected letter${chain.length!==1?"s":""} · direct replies + cited references</div>
+        </div>
+        <button onclick="closeChainPopup()" style="background:#1e293b;border:none;color:#94a3b8;width:36px;height:36px;border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="padding:20px 22px;max-height:75vh;overflow-y:auto">${cardsHTML}</div>
+      <div style="padding:12px 22px;border-top:1px solid #e2e8f0;background:white;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:#94a3b8">Click any letter card to view its full detail</span>
+        <div style="display:flex;gap:8px">
+          <button onclick="calOpenDetail('${id}')" style="background:#eff6ff;color:#2563eb;border:1px solid #93c5fd;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">← Back to Letter</button>
+          <button onclick="closeChainPopup()" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer">Close</button>
+        </div>
+      </div>
+    </div>`;
+  popup.style.display="block";
+  // Close on backdrop click
+  popup.onclick=function(e){ if(e.target===popup) closeChainPopup(); };
+}
+
+function calOpenDetail(id){
+  const letter=ST.letters.find(l=>l.id===id);
+  if(!letter)return;
+  const cat=catOf(letter.category);
+  const sc=STATUSES[letter.status]||{};
+  const popup=document.getElementById("chain-popup");
+  if(!popup)return;
+
+  const refs=[
+    {label:"Reply Ref. (TKV)",   color:"#0369a1", items:letter.replyRefs||[]},
+    {label:"Engineer's Reply",    color:"#c2410c", items:letter.engineerReplies||[]},
+    {label:"Sinohydro's Reply",   color:"#047857", items:letter.sinoReplies||[]},
+    {label:"Engineer Ref.",       color:"#92400e", items:letter.engineerRefs||[]},
+    {label:"Sinohydro Ref.",      color:"#64748b", items:letter.sinohydroRefs||[]},
+    {label:"Employer's Ref.",     color:"#6d28d9", items:letter.employerRefs||[]},
+  ].filter(r=>r.items.length);
+
+  const chips=(arr,color)=>arr.map(t=>`<span style="background:${color}22;border:1px solid ${color}55;color:${color};border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${esc(t)}</span>`).join("");
+
+  popup.innerHTML=`
+    <div style="max-width:660px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.4)">
+      <div style="background:linear-gradient(135deg,${cat.dark}22,${cat.color}08);padding:20px 24px;border-bottom:1px solid #e2e8f0">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <span style="background:${cat.bg};color:${cat.dark};border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700">${cat.icon} ${cat.label}</span>
+              ${letter.status?`<span style="background:${sc.bg||"#f1f5f9"};color:${sc.fg||"#475569"};border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">${letter.status}</span>`:""}
+              ${letter.department?`<span style="background:#f1f5f9;color:#475569;border-radius:6px;padding:2px 9px;font-size:11px">${esc(letter.department)}</span>`:""}
+            </div>
+            <div style="font-size:17px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.4">${esc(cleanTxt(letter.subject))}</div>
+            ${letter.letterUrl
+              ?`<a href="${esc(letter.letterUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-family:monospace;font-size:12px;font-weight:700;color:${cat.color};margin-bottom:4px;display:block;text-decoration:none">${esc(letter.letterNumber)}<span style="font-size:9px;font-weight:700;background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:middle">Open ↗</span></a>`
+              :`<div style="font-family:monospace;font-size:12px;font-weight:700;color:${cat.color};margin-bottom:4px">${esc(letter.letterNumber)}</div>`}
+            <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+              ${letter.sendDate?`<span style="font-size:12px;color:#64748b">📅 ${fmtD(letter.sendDate)}</span>`:""}
+              ${letter.hardCopyDate?`<span style="font-size:12px;color:#64748b">📄 HC: ${fmtD(letter.hardCopyDate)}</span>`:""}
+              ${letter.cc?`<span style="font-size:12px;color:#64748b">CC: ${esc(letter.cc)}</span>`:""}
+            </div>
+          </div>
+          <button onclick="closeChainPopup()" style="background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;padding:0 0 0 12px;line-height:1">×</button>
+        </div>
+      </div>
+      ${(letter.docTypes||[]).length||(letter.locations||[]).length||(letter.tags||[]).length?`
+      <div style="padding:12px 24px;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:5px">
+        ${chips(letter.docTypes||[],"#0369a1")}${chips(letter.locations||[],"#0e7490")}${chips(letter.tags||[],"#6d28d9")}
+      </div>`:""}
+      ${refs.length?`<div style="padding:14px 24px;border-bottom:1px solid #e2e8f0">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Reference Numbers</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+        ${refs.map(r=>`<div style="background:#f8fafc;border:1px solid ${r.color}33;border-radius:8px;padding:8px 10px">
+          <div style="font-size:9px;font-weight:700;color:${r.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${r.label}</div>
+          ${r.items.map(v=>`<div style="font-family:monospace;font-size:11px;font-weight:700;color:${r.color}">${esc(v)}</div>`).join("")}
+        </div>`).join("")}
+        </div>
+      </div>`:""}
+      <div style="padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="calOpenChain('${letter.id}')" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🔗 View Chain</button>
+          ${letter.letterUrl?`<a href="${esc(letter.letterUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px">📂 Open in Nutstore</a>`:''}
+        </div>
+        <button onclick="closeChainPopup()" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer">Close</button>
+      </div>
+    </div>`;
+  popup.style.display="block";
+  popup.onclick=function(e){ if(e.target===popup) closeChainPopup(); };
+}
+
+function calCloseM(){ closeChainPopup(); }
+
+// Escape key: close open modals / calendar
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  // Close calendar if open
+  if(document.getElementById("cal-overlay")?.classList.contains("open")){closeCalendar();return;}
+  // Close chain popup if visible
+  const popup=document.getElementById("chain-popup");
+  if(popup&&popup.style.display!=="none"){closeChainPopup();return;}
+  // Close any modal in mroot
+  if(document.getElementById("mroot")?.innerHTML.trim()){closeM();return;}
+});
+
+// Close jump picker on outside click
+document.addEventListener("click",e=>{
+  if(CAL.showYearPicker){
+    const yp=document.getElementById("year-picker");
+    const title=document.getElementById("cal-month-title");
+    const jumpRow=document.querySelector(".cal-jump-row");
+    if(yp&&!yp.contains(e.target)&&!title.contains(e.target)&&!(jumpRow&&jumpRow.contains(e.target))){
+      yp.style.display="none"; CAL.showYearPicker=false;
+    }
+  }
+});
+
+// ══ MAIN RENDER ═══════════════════════════════════════════════════════════════
+function fixTableHeight(){
+  const scroll=document.querySelector('.ltable-scroll');
+  if(!scroll)return;
+  const pgBar=document.querySelector('.pg-bar');
+  const pgH=pgBar?pgBar.offsetHeight+2:0;
+  const rect=scroll.getBoundingClientRect();
+  const available=window.innerHeight-rect.top-pgH-20;
+  scroll.style.maxHeight=Math.max(200,available)+'px';
+}
+function render(){renderSidebar();renderTopbar();renderContent();setTimeout(fixTableHeight,30);}
+window.addEventListener('resize',()=>setTimeout(fixTableHeight,30));
+
+// ══ PIN LOCK ══════════════════════════════════════════════════════════════════
+function handleLockBtn(){
+  if(_editMode){
+    // currently editing → lock again
+    _editMode=false;
+    render();
+  } else {
+    openPinModal();
+  }
+}
+
+function openPinModal(){
+  const overlay=document.createElement("div");
+  overlay.id="pin-overlay";
+  overlay.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center";
+  overlay.innerHTML=`
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:16px;padding:32px 36px;min-width:320px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.6)">
+      <div style="font-size:32px;margin-bottom:8px">🔒</div>
+      <div style="font-size:17px;font-weight:800;color:#f1f5f9;margin-bottom:4px">Enter PIN to Edit</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:20px">This tracker is in read-only mode</div>
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="12" placeholder="Enter PIN"
+        style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#f1f5f9;font-size:16px;text-align:center;letter-spacing:4px;outline:none;margin-bottom:12px"
+        onkeydown="if(event.key==='Enter')submitPin()"/>
+      <div id="pin-err" style="font-size:12px;color:#ef4444;min-height:18px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button onclick="document.getElementById('pin-overlay').remove()" style="padding:9px 22px;border-radius:8px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:13px;font-weight:700;cursor:pointer">Cancel</button>
+        <button onclick="submitPin()" style="padding:9px 22px;border-radius:8px;border:none;background:#2563eb;color:white;font-size:13px;font-weight:700;cursor:pointer">Unlock</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>document.getElementById("pin-input").focus(),50);
+}
+
+function submitPin(){
+  const val=(document.getElementById("pin-input")||{}).value||"";
+  if(val===EDIT_PIN){
+    document.getElementById("pin-overlay").remove();
+    _editMode=true;
+    render();
+  } else {
+    const err=document.getElementById("pin-err");
+    if(err){err.textContent="Incorrect PIN. Try again.";setTimeout(()=>{if(err)err.textContent="";},2000);}
+    const inp=document.getElementById("pin-input");
+    if(inp){inp.value="";inp.focus();}
+  }
+}
+
+autoConnect();
+</script>
+<div id="chain-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);overflow-y:auto;padding:30px 20px"></div>
+</body>
+</html>
