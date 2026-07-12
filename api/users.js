@@ -27,14 +27,18 @@ module.exports = async (req, res) => {
       const { username, password, departments, isAdmin } = req.body || {};
       const name = typeof username === 'string' ? username.trim() : '';
       if (!name) return res.status(400).json({ error: 'Username is required.' });
-      const existing = users[name];
+      // Usernames are case-insensitive: editing an account by a different casing
+      // updates that same record instead of creating a near-duplicate that would
+      // make login ambiguous.
+      const existingKey = Object.keys(users).find((k) => k.toLowerCase() === name.toLowerCase());
+      const existing = existingKey ? users[existingKey] : null;
       if (!existing && !password) return res.status(400).json({ error: 'A password is required for a new user.' });
       const rec = existing || {};
       if (password) rec.pass = hashPassword(password);
       if (Array.isArray(departments)) rec.departments = [...new Set(departments.map((d) => String(d).trim()).filter(Boolean))];
       else if (!rec.departments) rec.departments = [];
       rec.isAdmin = !!isAdmin;
-      users[name] = rec;
+      users[existingKey || name] = rec;
       await saveUsers(users);
       return res.status(200).json({ ok: true });
     }
@@ -42,8 +46,9 @@ module.exports = async (req, res) => {
     if (req.method === 'DELETE') {
       const u = (req.query && req.query.u) || (req.body && req.body.username);
       if (!u) return res.status(400).json({ error: 'username required' });
-      if (u === me.username) return res.status(400).json({ error: "You can't delete your own account." });
-      delete users[u];
+      const key = Object.keys(users).find((k) => k.toLowerCase() === String(u).toLowerCase()) || u;
+      if (key.toLowerCase() === String(me.username).toLowerCase()) return res.status(400).json({ error: "You can't delete your own account." });
+      delete users[key];
       await saveUsers(users);
       return res.status(200).json({ ok: true });
     }
