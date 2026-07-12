@@ -1885,6 +1885,7 @@ function buildChain(startLetter){
   const revSinoReply = {}; // letterNum → letters with it in sinoReplies
   const revReplyRef  = {}; // letterNum → letters with it in replyRefs
   const revEngRef    = {}; // letterNum → outgoing letters with it in engineerRefs
+  const revSinoRef   = {}; // letterNum → letters that cite it in sinohydroRefs (any direction)
   ST.letters.forEach(l => {
     const idx = (map, refs) => (refs||[]).forEach(r => {
       const k=r.toLowerCase(); if(!map[k])map[k]=[]; map[k].push(l);
@@ -1893,6 +1894,7 @@ function buildChain(startLetter){
     idx(revSinoReply, l.sinoReplies);
     idx(revReplyRef,  l.replyRefs);
     idx(revEngRef,    l.engineerRefs);
+    idx(revSinoRef,   l.sinohydroRefs);
   });
 
   // ── findRef: year-agnostic 3-layer lookup ──────────────────────────────
@@ -1966,6 +1968,13 @@ function buildChain(startLetter){
     const lNum  = (letter.letterNumber||"").toLowerCase();
     const lDate = letter.sendDate; // used for year-agnostic disambiguation
 
+    // Direction-agnostic: a letter's SinoHydro references (letters it cites) and
+    // the letters that cite IT can appear on both incoming and outgoing letters,
+    // so follow them for every letter — not only incoming ones. (An outgoing
+    // letter often cites earlier outgoing letters via sinohydroRefs.)
+    (letter.sinohydroRefs||[]).forEach(ref => add(findRef(ref, lDate)));
+    (revSinoRef[lNum]||[]).forEach(t => add(t));
+
     if(isOut){
       // ① Forward: outgoing → engineerRefs → the incoming letter(s) it was responding to
       (letter.engineerRefs||[]).forEach(ref => add(findRef(ref, lDate)));
@@ -1979,10 +1988,6 @@ function buildChain(startLetter){
       });
       // ④ Forward: incoming → sinoReplies → our outgoing reply
       (letter.sinoReplies||[]).forEach(ref => {
-        add(findRef(ref, lDate));
-      });
-      // ⑤ Forward: incoming → sinohydroRefs → the TKV outgoing letter it references
-      (letter.sinohydroRefs||[]).forEach(ref => {
         add(findRef(ref, lDate));
       });
       // ⑥ Reverse: outgoing letters that list THIS incoming in their engineerReplies
