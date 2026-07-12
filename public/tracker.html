@@ -855,7 +855,7 @@ function applyData(d){
 }
 
 // ── Status panel ────────────────────────────────────────────────────────────
-function setSP(state){
+function setSP(state,detail){
   const dot=document.getElementById("sp-dot");
   const lbl=document.getElementById("sp-label");
   const saveBtn=document.getElementById("sp-save-btn");
@@ -877,7 +877,8 @@ function setSP(state){
     lbl.textContent="✗ Save error — check connection, then Save Now";
   }else{ // load-error
     dot.style.background="#ef4444"; lbl.style.color="#ef4444";
-    lbl.textContent="✗ Couldn't load data";
+    lbl.textContent=detail?("✗ "+detail):"✗ Couldn't load data";
+    lbl.title=detail||"";
     if(saveBtn)saveBtn.style.display="none";
     if(retryBtn)retryBtn.style.display="block";
   }
@@ -922,7 +923,12 @@ async function loadFromServer(){
   try{
     const res=await fetch("/api/letters");
     if(res.status===401){ location.href="index.html"; return; } // not signed in — go to login
-    if(!res.ok)throw new Error("HTTP "+res.status);
+    if(!res.ok){
+      // Surface the server's real reason (e.g. "Nutstore responded 404…") instead of a generic message.
+      let detail="HTTP "+res.status;
+      try{ const j=await res.json(); if(j&&j.error) detail=j.error; }catch(_){}
+      throw new Error(detail);
+    }
     const json=await res.json();
     CAN_EDIT=!!json.canEdit;
     document.getElementById("addbtn").style.display=CAN_EDIT?"":"none";
@@ -936,8 +942,22 @@ async function loadFromServer(){
     render();
   }catch(e){
     console.error("Load failed:",e);
-    setSP("load-error");
+    // User management must stay reachable even when the letters file can't load,
+    // so an admin can still set up logins while the data source is being fixed.
+    await revealAdminIfPossible();
+    setSP("load-error",e.message);
   }
+}
+
+// Reveal the "Manage users" button from the session identity alone (independent
+// of whether the letters file loaded), so admins are never locked out of it.
+async function revealAdminIfPossible(){
+  try{
+    const r=await fetch("/api/me");
+    if(!r.ok)return;
+    const me=await r.json();
+    if(me&&me.isAdmin){ document.getElementById("sp-admin-btn").style.display="block"; }
+  }catch(_){/* ignore */}
 }
 
 // Show the signed-in identity + (for department viewers) their scope.
