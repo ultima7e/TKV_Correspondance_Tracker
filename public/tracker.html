@@ -516,7 +516,7 @@ let _prevChainId=null; // id of the letter whose chain was open when user clicke
 
 // ══ STATE ════════════════════════════════════════════════════════════════════
 let ST={
-  letters:[], tab:"__all__",
+  letters:[], tab:"incoming", tabExplicit:false,
   allTags:[...STAGS], allDocTypes:[...DEF_DOCTYPES], allLocations:[...DEF_LOCS], allDepts:[...DEF_DEPTS],
   activeTags:[], activeDocTypes:[], activeLocations:[], activeDepts:[],
   tagMode:"AND", dtMode:"AND", locMode:"AND",
@@ -992,21 +992,34 @@ function editL(id,f){ST.letters=ST.letters.map(l=>l.id===id?{...l,...f}:l);initP
 function delL(id){ST.letters=ST.letters.filter(l=>l.id!==id);_invalidateCache();persist();closeM();render();}
 
 function setTab(id){
-  ST.tab=id;ST.searchActive=false;ST.search="";ST.page=0;
+  // A category click is an explicit choice — searches then stay scoped to it.
+  ST.tab=id;ST.tabExplicit=true;_searchPrevTab=null;
+  ST.searchActive=false;ST.search="";ST.page=0;
   document.getElementById("sinp").value="";
   document.getElementById("searchbtns").style.display="none";
   render();
 }
 let _srchDebounce=null;
+let _searchPrevTab=null; // browse tab remembered when a search auto-broadens to All Letters
 function onSrch(v){
-  ST.search=v;if(!v)ST.searchActive=false;
+  ST.search=v;
+  let tabChanged=false;
+  if(v){
+    // A search spans every category by default; it only stays scoped to a tab
+    // when the user has explicitly clicked that category.
+    if(!ST.tabExplicit && ST.tab!=='__all__'){ _searchPrevTab=ST.tab; ST.tab='__all__'; tabChanged=true; }
+  }else{
+    ST.searchActive=false;
+    if(_searchPrevTab!==null){ ST.tab=_searchPrevTab; _searchPrevTab=null; tabChanged=true; } // back to the browse tab
+  }
   document.getElementById("searchbtns").style.display=v?"flex":"none";
+  if(tabChanged){ ST.page=0; render(); return; }
   renderSidebar();renderTopbar(); // instant badge update
   clearTimeout(_srchDebounce);
   _srchDebounce=setTimeout(()=>{ST.page=0;renderContent();setTimeout(fixTableHeight,30);},200);
 }
 function doSearch(){if(ST.search.trim())ST.searchActive=true;render();}
-function clearSearch(){ST.search="";ST.searchActive=false;document.getElementById("sinp").value="";document.getElementById("searchbtns").style.display="none";render();}
+function clearSearch(){ST.search="";ST.searchActive=false;document.getElementById("sinp").value="";document.getElementById("searchbtns").style.display="none";if(_searchPrevTab!==null){ST.tab=_searchPrevTab;_searchPrevTab=null;}render();}
 
 function toggleF(type,val){
   const k={tags:"activeTags",dt:"activeDocTypes",loc:"activeLocations",dept:"activeDepts"}[type];
@@ -1015,7 +1028,7 @@ function toggleF(type,val){
 }
 function setMode(type,m){const k={tags:"tagMode",dt:"dtMode",loc:"locMode"}[type];ST[k]=m;ST.page=0;renderSidebar();renderContent();}
 function clearF(type){const k={tags:"activeTags",dt:"activeDocTypes",loc:"activeLocations",dept:"activeDepts"}[type];ST[k]=[];ST.page=0;render();}
-function clearAllFilters(){ST.activeTags=[];ST.activeDocTypes=[];ST.activeLocations=[];ST.activeDepts=[];ST.searchActive=false;ST.search="";document.getElementById("sinp").value="";ST.page=0;render();}
+function clearAllFilters(){ST.activeTags=[];ST.activeDocTypes=[];ST.activeLocations=[];ST.activeDepts=[];ST.searchActive=false;ST.search="";document.getElementById("sinp").value="";if(_searchPrevTab!==null){ST.tab=_searchPrevTab;_searchPrevTab=null;}ST.page=0;render();}
 function toggleSec(k){ST.collapsed[k]=!ST.collapsed[k];renderSidebar();}
 function toggleFbSec(k){ST.collapsed['fb_'+k]=!ST.collapsed['fb_'+k];renderFilterBar();}
 
