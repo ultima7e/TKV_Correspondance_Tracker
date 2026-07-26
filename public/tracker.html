@@ -347,6 +347,58 @@ tbody tr:hover td{background:#f8fafc}
 .add-att-btn{background:#eff6ff;border:1px dashed #93c5fd;color:#2563eb;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;width:100%;text-align:left;margin-top:4px}
 .add-att-btn:hover{background:#dbeafe}
 .lno-link-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;background:#dbeafe;color:#2563eb;border-radius:4px;padding:1px 6px;font-weight:700;vertical-align:middle;margin-left:6px;cursor:pointer}
+
+/* ═══════════════ Mobile / responsive ═══════════════ */
+#navtoggle{display:none;background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;width:38px;height:38px;font-size:18px;align-items:center;justify-content:center;flex:none}
+#nav-backdrop{display:none}
+@media (max-width:860px){
+  body{height:100dvh}
+  #navtoggle{display:flex}
+  #sidebar{position:fixed;top:0;left:0;height:100dvh;width:min(86vw,300px);z-index:1300;
+    transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(2,8,23,.45)}
+  body.nav-open #sidebar{transform:translateX(0)}
+  #nav-backdrop{display:block;position:fixed;inset:0;background:rgba(2,8,23,.5);z-index:1200;
+    opacity:0;visibility:hidden;transition:opacity .25s}
+  body.nav-open #nav-backdrop{opacity:1;visibility:visible}
+  #topbar{padding:0 10px;height:54px;gap:8px}
+  #topbar-title{flex:1;min-width:0}
+  #topbar h1{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #topsub{font-size:10px}
+  #topbar>div:last-child{gap:6px!important}
+  #topbar>div:last-child button{padding:6px 11px!important;font-size:12px!important}
+  .hide-mobile{display:none!important}
+  #content{padding:10px}
+}
+@media (max-width:640px){
+  /* letters table -> stacked cards */
+  .ltable-wrap{border:none;background:transparent;border-radius:0;overflow:visible}
+  .ltable-scroll{overflow:visible!important}
+  .ltable-scroll>table{display:block;width:100%!important;table-layout:auto!important}
+  .ltable-scroll thead{display:none}
+  .ltable-scroll tbody{display:block}
+  .ltable-scroll tr{display:block;background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+    padding:8px 13px;margin-bottom:10px;box-shadow:0 1px 3px rgba(2,8,23,.06)}
+  .ltable-scroll td{display:flex!important;justify-content:space-between;gap:12px;align-items:flex-start;
+    width:auto!important;height:auto!important;white-space:normal!important;overflow:visible!important;
+    padding:5px 0!important;border-bottom:1px dashed #f1f5f9;text-align:left!important}
+  .ltable-scroll td:last-child{border-bottom:none}
+  .ltable-scroll td>div{flex-wrap:wrap!important;overflow:visible!important;justify-content:flex-end}
+  .ltable-scroll td::before{content:attr(data-label);font-weight:700;color:#64748b;font-size:11px;
+    text-transform:uppercase;letter-spacing:.02em;flex:none;min-width:74px;padding-top:1px}
+  .ltable-scroll td.col-idx{display:none!important}
+  .ltable-scroll td.col-subject{flex-direction:column;gap:3px}
+  .ltable-scroll td.col-subject::before{min-width:0}
+  .ltable-scroll td.col-subject .subj-cell>.subj-text{-webkit-line-clamp:unset;display:block;font-size:14px}
+  .ltable-scroll td.col-lno .lno-btn{white-space:normal;font-size:12.5px}
+  .ltable-scroll td.col-actions{justify-content:flex-start;flex-wrap:wrap;gap:8px;padding-top:10px!important}
+  .ltable-scroll td.col-actions::before{display:none}
+  .ltable-scroll td.col-actions button{font-size:13px;padding:7px 14px}
+  /* modals fuller on small screens */
+  .overlay{padding:8px}
+  .refboxes{grid-template-columns:1fr}
+  .modal-ft{flex-wrap:wrap}
+  .det-ft{flex-wrap:wrap;gap:8px}
+}
 </style>
 </head>
 <body>
@@ -409,9 +461,10 @@ tbody tr:hover td{background:#f8fafc}
 
 <div id="main">
   <div id="topbar">
-    <div><h1 id="ttitle">Incoming Letters</h1><div id="topsub"></div></div>
+    <button id="navtoggle" onclick="toggleNav()" aria-label="Open menu" title="Menu">☰</button>
+    <div id="topbar-title"><h1 id="ttitle">Incoming Letters</h1><div id="topsub"></div></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <div id="data-date-badge" style="display:flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:#166534;white-space:nowrap" title="Date of the most recently added letter">
+      <div id="data-date-badge" class="hide-mobile" style="display:flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:#166534;white-space:nowrap" title="Date of the most recently added letter">
         <span style="font-size:13px">📋</span>
         <span>Data Date: </span><span id="data-date-val" style="color:#15803d">—</span>
       </div>
@@ -427,6 +480,7 @@ tbody tr:hover td{background:#f8fafc}
   </div>
   <div id="content"></div>
 </div>
+<div id="nav-backdrop" onclick="closeNav()"></div>
 <div id="mroot"></div>
 <div id="cal-overlay">
   <div class="cal-topbar">
@@ -991,12 +1045,17 @@ function addL(f){ST.letters.push({...f,id:Date.now()+"_"+Math.random().toString(
 function editL(id,f){ST.letters=ST.letters.map(l=>l.id===id?{...l,...f}:l);initPendingForLatest(ST.letters,20);_invalidateCache();persist();render();}
 function delL(id){ST.letters=ST.letters.filter(l=>l.id!==id);_invalidateCache();persist();closeM();render();}
 
+// ── Mobile navigation drawer ────────────────────────────────────────────────
+function toggleNav(){document.body.classList.toggle("nav-open");}
+function closeNav(){document.body.classList.remove("nav-open");}
+
 function setTab(id){
   // A category click is an explicit choice — searches then stay scoped to it.
   ST.tab=id;ST.tabExplicit=true;_searchPrevTab=null;
   ST.searchActive=false;ST.search="";ST.page=0;
   document.getElementById("sinp").value="";
   document.getElementById("searchbtns").style.display="none";
+  closeNav(); // reveal the letters on mobile
   render();
 }
 let _srchDebounce=null;
@@ -1018,7 +1077,7 @@ function onSrch(v){
   clearTimeout(_srchDebounce);
   _srchDebounce=setTimeout(()=>{ST.page=0;renderContent();setTimeout(fixTableHeight,30);},200);
 }
-function doSearch(){if(ST.search.trim())ST.searchActive=true;render();}
+function doSearch(){if(ST.search.trim())ST.searchActive=true;closeNav();render();}
 function clearSearch(){ST.search="";ST.searchActive=false;document.getElementById("sinp").value="";document.getElementById("searchbtns").style.display="none";if(_searchPrevTab!==null){ST.tab=_searchPrevTab;_searchPrevTab=null;}render();}
 
 function toggleF(type,val){
@@ -1352,18 +1411,18 @@ function renderContent(){
     const dts=(l.docTypes||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('dt','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
     const locs=(l.locations||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('loc','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
     const tgs=(l.tags||[]).map(t=>`<span class="tag-pill" style="background:${tc(t)}22;border-color:${tc(t)}55;color:${tc(t)}" onclick="toggleF('tags','${esc(t)}')">${esc(t)}</span>`).join("")||'<span style="color:#e2e8f0">—</span>';
-    html+=`<tr><td style="color:#94a3b8;text-align:center">${globalIdx+1}</td>
-      ${isAll?`<td><span class="cat-badge" style="background:${cat.bg};color:${cat.dark}">${cat.icon} ${cat.short}</span></td>`:""}
-      <td style="color:#475569;font-size:11px;overflow:hidden;white-space:nowrap">${fmtD(l.sendDate)}</td>
-      <td style="overflow:hidden"><button class="lno-btn" onclick="openDet('${l.id}')" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(l.letterNumber)}</button>${l.letterUrl?`<span class="lno-link-badge" onclick="event.stopPropagation();window.open('${esc(l.letterUrl)}','_blank')" title="Open letter document">📄</span>`:""}${l.hardCopyDate?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">HC:${fmtD(l.hardCopyDate)}</div>`:""}</td>
-      <td style="overflow:hidden"><div class="subj-cell"><div class="subj-text">${esc(l._cleanSubject)}</div></div></td>
-      <td style="overflow:hidden;font-size:11px;color:#475569">${l.department?`<span style="background:#f1f5f9;border-radius:5px;padding:2px 8px;display:inline-block;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis">${esc(l.department)}</span>`:"—"}</td>
-      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${dts}</div></td>
-      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${locs}</div></td>
-      <td style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${tgs}</div></td>
-      <td style="overflow:hidden;white-space:nowrap">${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg}">${l.status}</span>`:"—"}</td>
-      <td id="ps-cell-${l.id}" style="overflow:hidden">${pendingDisplayHTML(l)}</td>
-      <td style="white-space:nowrap">
+    html+=`<tr><td class="col-idx" style="color:#94a3b8;text-align:center">${globalIdx+1}</td>
+      ${isAll?`<td data-label="Category"><span class="cat-badge" style="background:${cat.bg};color:${cat.dark}">${cat.icon} ${cat.short}</span></td>`:""}
+      <td data-label="Date" style="color:#475569;font-size:11px;overflow:hidden;white-space:nowrap">${fmtD(l.sendDate)}</td>
+      <td class="col-lno" data-label="Letter No." style="overflow:hidden"><button class="lno-btn" onclick="openDet('${l.id}')" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(l.letterNumber)}</button>${l.letterUrl?`<span class="lno-link-badge" onclick="event.stopPropagation();window.open('${esc(l.letterUrl)}','_blank')" title="Open letter document">📄</span>`:""}${l.hardCopyDate?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">HC:${fmtD(l.hardCopyDate)}</div>`:""}</td>
+      <td class="col-subject" data-label="Subject" style="overflow:hidden"><div class="subj-cell"><div class="subj-text">${esc(l._cleanSubject)}</div></div></td>
+      <td data-label="Department" style="overflow:hidden;font-size:11px;color:#475569">${l.department?`<span style="background:#f1f5f9;border-radius:5px;padding:2px 8px;display:inline-block;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis">${esc(l.department)}</span>`:"—"}</td>
+      <td data-label="Doc Type" style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${dts}</div></td>
+      <td data-label="Location" style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${locs}</div></td>
+      <td data-label="Tags" style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${tgs}</div></td>
+      <td data-label="Status" style="overflow:hidden;white-space:nowrap">${l.status?`<span class="spill" style="background:${sc.bg};color:${sc.fg}">${l.status}</span>`:"—"}</td>
+      <td data-label="Reply" id="ps-cell-${l.id}" style="overflow:hidden">${pendingDisplayHTML(l)}</td>
+      <td class="col-actions" style="white-space:nowrap">
         <button class="btn-sm" style="color:#2563eb;border-color:#2563eb" onclick="openDet('${l.id}')">View</button>
         <button style="background:#e0f2fe;color:#0369a1;border:1px solid #0369a1;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-left:3px;font-weight:700;white-space:nowrap" onclick="openChain('${l.id}')" title="View correspondence chain">🔗 Chain</button>
         ${(_editMode&&CAN_EDIT)?`<button class="btn-sm" style="color:#64748b;border-color:#64748b;margin-left:3px" onclick="openEdit('${l.id}')">Edit</button>
@@ -3158,6 +3217,7 @@ document.addEventListener("click",e=>{
 function fixTableHeight(){
   const scroll=document.querySelector('.ltable-scroll');
   if(!scroll)return;
+  if(window.innerWidth<=640){ scroll.style.maxHeight=''; return; } // mobile: cards flow, #content scrolls
   const pgBar=document.querySelector('.pg-bar');
   const pgH=pgBar?pgBar.offsetHeight+2:0;
   const rect=scroll.getBoundingClientRect();
