@@ -1969,6 +1969,18 @@ function buildChain(startLetter){
     idx(revSinoRef,   l.sinohydroRefs);
   });
 
+  // ── Hub detection ────────────────────────────────────────────────────────
+  // A letter cited by MANY others (e.g. a standing acknowledgement / common
+  // reference) is not a thread link. Chaining "who references this letter"
+  // through such a hub merges dozens of unrelated letters into one giant chain.
+  // Count how many letters cite each number; letters at/over the limit are hubs,
+  // and we do NOT follow their reverse index (we still show them, just don't
+  // expand outward from them).
+  const citerCount = {};
+  ST.letters.forEach(l => getAllRefs(l).forEach(r => { citerCount[r] = (citerCount[r]||0) + 1; }));
+  const HUB_LIMIT = 6;
+  const isHub = (num) => (citerCount[num]||0) >= HUB_LIMIT;
+
   // ── findRef: year-agnostic 3-layer lookup ──────────────────────────────
   // We NEVER filter by year because responses can arrive 200-300+ days later,
   // crossing year boundaries. Excel refs often have the wrong year written.
@@ -2044,8 +2056,11 @@ function buildChain(startLetter){
     // the letters that cite IT can appear on both incoming and outgoing letters,
     // so follow them for every letter — not only incoming ones. (An outgoing
     // letter often cites earlier outgoing letters via sinohydroRefs.)
+    // Forward references (what THIS letter cites) are always safe to follow —
+    // a letter only cites a handful. The reverse direction (who cites THIS
+    // letter) is what explodes through hubs, so it's gated on !isHub below.
     (letter.sinohydroRefs||[]).forEach(ref => add(findRef(ref, lDate)));
-    (revSinoRef[lNum]||[]).forEach(t => add(t));
+    if(!isHub(lNum)) (revSinoRef[lNum]||[]).forEach(t => add(t));
 
     if(isOut){
       // ① Forward: outgoing → engineerRefs → the incoming letter(s) it was responding to
@@ -2062,12 +2077,13 @@ function buildChain(startLetter){
       (letter.sinoReplies||[]).forEach(ref => {
         add(findRef(ref, lDate));
       });
-      // ⑥ Reverse: outgoing letters that list THIS incoming in their engineerReplies
-      (revEngReply[lNum]||[]).forEach(t => add(t));
-      // ⑦ Reverse: letters that list THIS as their sinoReply target
-      (revSinoReply[lNum]||[]).forEach(t => add(t));
-      // ⑧ Reverse: outgoing letters that reference THIS incoming in their engineerRefs
-      (revEngRef[lNum]||[]).forEach(t => add(t));
+      // ⑥⑦⑧ Reverse: letters that cite THIS one — skip entirely when THIS is a
+      // hub, otherwise it drags in dozens of unrelated letters.
+      if(!isHub(lNum)){
+        (revEngReply[lNum]||[]).forEach(t => add(t));
+        (revSinoReply[lNum]||[]).forEach(t => add(t));
+        (revEngRef[lNum]||[]).forEach(t => add(t));
+      }
     }
   }
 
