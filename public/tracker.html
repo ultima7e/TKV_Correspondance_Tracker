@@ -2052,15 +2052,14 @@ function buildChain(startLetter){
     const lNum  = (letter.letterNumber||"").toLowerCase();
     const lDate = letter.sendDate; // used for year-agnostic disambiguation
 
-    // Direction-agnostic: a letter's SinoHydro references (letters it cites) and
-    // the letters that cite IT can appear on both incoming and outgoing letters,
-    // so follow them for every letter — not only incoming ones. (An outgoing
-    // letter often cites earlier outgoing letters via sinohydroRefs.)
-    // Forward references (what THIS letter cites) are always safe to follow —
-    // a letter only cites a handful. The reverse direction (who cites THIS
-    // letter) is what explodes through hubs, so it's gated on !isHub below.
+    // A hub (letter cited by many others) is a common reference, not a thread
+    // link. Do NOT expand it in ANY direction — it still appears in the chain
+    // (added by whoever referenced it); we just never walk outward from it.
+    // This is what stops one common letter merging dozens of unrelated threads.
+    if(isHub(lNum)) return;
+
     (letter.sinohydroRefs||[]).forEach(ref => add(findRef(ref, lDate)));
-    if(!isHub(lNum)) (revSinoRef[lNum]||[]).forEach(t => add(t));
+    (revSinoRef[lNum]||[]).forEach(t => add(t));
 
     if(isOut){
       // ① Forward: outgoing → engineerRefs → the incoming letter(s) it was responding to
