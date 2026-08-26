@@ -2895,9 +2895,14 @@ function calSetPendingFilter(val, view){
 }
 
 function applyCalPendingFilter(letters, isIncoming){
-  if(!CAL.pendingCal||!isIncoming) return letters;
+  // Applies to BOTH incoming and outgoing (isIncoming kept only for call-site
+  // compatibility). "pending"/"replied" use the same rule as the main list so
+  // the calendar stays consistent: pending = unreplied; replied = a reply is
+  // recorded (our sinoReplies, or the OE's engineerReplies) or marked replied.
+  if(!CAL.pendingCal) return letters;
   if(CAL.pendingCal==='pending')  return letters.filter(l=>isPending(l));
-  if(CAL.pendingCal==='replied')  return letters.filter(l=>(l.sinoReplies||[]).length>0||(l.pendingStatus==='cleared'&&l.category==='incoming'));
+  if(CAL.pendingCal==='replied')  return letters.filter(l=>
+    (l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0||l.pendingStatus==='replied');
   return letters;
 }
 
