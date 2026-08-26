@@ -815,31 +815,22 @@ function setRespFilter(val){
   ST.page=0;render();
 }
 
-// Auto-initialise pending status for the latest N incoming AND outgoing letters
+// Reply status for EVERY incoming/outgoing letter: it is PENDING until a reply
+// is recorded (its sinoReplies/engineerReplies field gets populated), then it is
+// REPLIED. A manual 'cleared' ("no response needed") is preserved. No cap — an
+// unreplied letter shows pending regardless of its age or how many there are.
+// (n kept only for call-site compatibility; it is intentionally ignored.)
 function initPendingForLatest(letters, n=20){
-  // Step 1: mark as replied when sinoReplies or engineerReplies are populated
   letters.forEach(l=>{
-    if((l.category!=='incoming'&&l.category!=='outgoing')||l.pendingStatus!=='pending') return;
+    if(l.category!=='incoming'&&l.category!=='outgoing') return;
     const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
-    if(hasReply) l.pendingStatus='replied';
-  });
-
-  // Step 2: for each tracked category, auto-set pending for latest N unreplied letters
-  ['incoming','outgoing'].forEach(cat=>{
-    const catLetters=letters
-      .filter(l=>l.category===cat)
-      .sort((a,b)=>new Date(b.sendDate||0)-new Date(a.sendDate||0));
-    let count=0;
-    for(const l of catLetters){
-      const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
-      if(hasReply) continue;
-      if(count<n){
-        if(!l.pendingStatus) l.pendingStatus='pending';
-        count++;
-      } else {
-        if(l.pendingStatus==='pending') l.pendingStatus='';
-      }
+    if(hasReply){
+      if(l.pendingStatus!=='cleared') l.pendingStatus='replied';
+      return;
     }
+    // No reply recorded yet → pending, unless the user explicitly resolved it.
+    if(l.pendingStatus==='cleared'||l.pendingStatus==='replied') return;
+    l.pendingStatus='pending';
   });
 }
 
