@@ -6,5 +6,8 @@
     "test": "node --test",
     "dev": "node scripts/dev-server.js",
     "dev:cloud": "node --env-file=.env scripts/dev-server.js"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
   }
 }

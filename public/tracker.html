@@ -756,22 +756,24 @@ function pendingDisplayHTML(l){
     return `<span class="pending-badge is-replied" title="${esc(replyRef)}">✓ Replied${shortRef?' (#'+esc(shortRef)+')':''}</span>`;
   }
   const ps=l.pendingStatus||'';
+  // Excel-sourced letters are read-only here (change status in the master Excel).
+  const canTrack=CAN_EDIT&&l._src!=='xlsx';
   // Auto-resolved via outgoing letter's Engineer's Ref (no rollback)
   if(ps==='replied'){
     return `<span class="pending-badge is-replied">✓ Replied</span>`;
   }
   if(ps==='pending'){
     return `<span class="pending-badge is-pending">⏳ Pending</span>`+
-      (CAN_EDIT?` <button onclick="openPendingEdit('${l.id}');event.stopPropagation()" title="Change status" `+
+      (canTrack?` <button onclick="openPendingEdit('${l.id}');event.stopPropagation()" title="Change status" `+
       `style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:12px;padding:0 2px">✏</button>`:"");
   }
   if(ps==='cleared'){
     return `<span class="pending-badge is-cleared">— Not Required</span>`+
-      (CAN_EDIT?` <button onclick="setPendingStatus('${l.id}','pending');event.stopPropagation()" title="Restore pending" `+
+      (canTrack?` <button onclick="setPendingStatus('${l.id}','pending');event.stopPropagation()" title="Restore pending" `+
       `style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;padding:0 2px">↩</button>`:"");
   }
   // Not tracked (old letter, no pendingStatus set)
-  if(!CAN_EDIT)return "";
+  if(!canTrack)return "";
   return `<button onclick="setPendingStatus('${l.id}','pending');event.stopPropagation()" `+
     `style="background:#f8fafc;border:1px dashed #cbd5e1;color:#94a3b8;border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer">+ Track</button>`;
 }
@@ -1513,13 +1515,13 @@ function renderDetail(l){
     <div class="det-sec"><h3>Reference Numbers</h3><div class="refboxes">${refs}</div></div>
     </div>
     <div class="det-ft" style="flex-shrink:0">
-      ${(_editMode&&CAN_EDIT)?`<button class="btn-danger" onclick="confirmDel('${l.id}')">🗑 Delete</button>`:`<div></div>`}
+      ${(_editMode&&CAN_EDIT&&l._src!=='xlsx')?`<button class="btn-danger" onclick="confirmDel('${l.id}')">🗑 Delete</button>`:(l._src==='xlsx'?`<div style="font-size:11px;color:#94a3b8;align-self:center">📄 From master Excel — edit in the source file</div>`:`<div></div>`)}
       <div style="display:flex;gap:8px">
         ${_backChainId?`<button class="btn-out" style="color:#0369a1;border-color:#93c5fd" onclick="_prevChainId=null;openChain('${esc(_backChainId)}')">← Back to Chain</button>`:""}
         <button class="btn-out" onclick="closeM()">Close</button>
         <button style="background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openChain('${l.id}')">🔗 View Chain</button>
         ${l.letterUrl?`<button style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openPdfPreview('${l.id}','${esc(l.letterUrl)}','${esc(l.letterNumber)}','${_backChainId||''}')">📄 Preview</button>`:""}
-        ${(_editMode&&CAN_EDIT)?`<button class="btn-primary" onclick="closeM();openEdit('${l.id}')">✏ Edit</button>`:""}
+        ${(_editMode&&CAN_EDIT&&l._src!=='xlsx')?`<button class="btn-primary" onclick="closeM();openEdit('${l.id}')">✏ Edit</button>`:""}
       </div>
     </div>
   </div></div>`;
