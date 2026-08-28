@@ -2437,10 +2437,14 @@ function doImport(mode){
       const key=(imp.letterNumber||'').toLowerCase();
       if(byNum[key]){
         const ex=byNum[key];
-        byNum[key]={...ex,...imp,id:ex.id,
+        const merged={...ex,...imp,id:ex.id,
           letterUrl:imp.letterUrl||ex.letterUrl||'',
           attachments:(imp.attachments&&imp.attachments.length)?imp.attachments:(ex.attachments||[]),
           pendingStatus:ex.pendingStatus||''};
+        // Importing a URL/attachment onto an Excel-synced letter "adopts" it into
+        // the app so the value persists (the overlay would otherwise drop it on save).
+        if(ex._src==='xlsx'&&(merged.letterUrl||(merged.attachments&&merged.attachments.length))){merged._adopted=true;merged._src='json';}
+        byNum[key]=merged;
         updated++;
       } else {
         byNum[key]={...imp,id:Date.now()+'_'+Math.random().toString(36).slice(2,5)};
