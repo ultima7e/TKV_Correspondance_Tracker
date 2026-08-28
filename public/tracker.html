@@ -1515,13 +1515,13 @@ function renderDetail(l){
     <div class="det-sec"><h3>Reference Numbers</h3><div class="refboxes">${refs}</div></div>
     </div>
     <div class="det-ft" style="flex-shrink:0">
-      ${(_editMode&&CAN_EDIT&&l._src!=='xlsx')?`<button class="btn-danger" onclick="confirmDel('${l.id}')">🗑 Delete</button>`:(l._src==='xlsx'?`<div style="font-size:11px;color:#94a3b8;align-self:center">📄 From master Excel — edit in the source file</div>`:`<div></div>`)}
+      ${(_editMode&&CAN_EDIT&&l._src!=='xlsx')?`<button class="btn-danger" onclick="confirmDel('${l.id}')">🗑 Delete</button>`:(l._src==='xlsx'?`<div style="font-size:11px;color:#94a3b8;align-self:center">📄 Synced from Excel — editing keeps it in the app</div>`:`<div></div>`)}
       <div style="display:flex;gap:8px">
         ${_backChainId?`<button class="btn-out" style="color:#0369a1;border-color:#93c5fd" onclick="_prevChainId=null;openChain('${esc(_backChainId)}')">← Back to Chain</button>`:""}
         <button class="btn-out" onclick="closeM()">Close</button>
         <button style="background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openChain('${l.id}')">🔗 View Chain</button>
         ${l.letterUrl?`<button style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer" onclick="openPdfPreview('${l.id}','${esc(l.letterUrl)}','${esc(l.letterNumber)}','${_backChainId||''}')">📄 Preview</button>`:""}
-        ${(_editMode&&CAN_EDIT&&l._src!=='xlsx')?`<button class="btn-primary" onclick="closeM();openEdit('${l.id}')">✏ Edit</button>`:""}
+        ${(_editMode&&CAN_EDIT)?`<button class="btn-primary" onclick="closeM();openEdit('${l.id}')">✏ Edit</button>`:""}
       </div>
     </div>
   </div></div>`;
@@ -1869,6 +1869,10 @@ function submitForm(){
       return (FS.category==='incoming'||FS.category==='outgoing')?'pending':''; // auto-set for new incoming/outgoing
     })(),
   };
+  // Editing a letter that came from the master Excel "adopts" it into the app:
+  // it is persisted and no longer overwritten by the Excel overlay on reload.
+  const ex0=id?ST.letters.find(l=>l.id===id):null;
+  if(ex0&&ex0._src==='xlsx'){f._adopted=true;f._src='json';}
   if(id)editL(id,f);else addL(f);closeM();
 }
 
