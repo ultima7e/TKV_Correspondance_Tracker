@@ -1,7 +1,7 @@
 // GET /api/letter-pdf?cat=outgoing&n=985 — streams the letter's PDF from Nutstore,
 // found by matching the number to the filename. Auth-gated (logged-in users only).
 const { currentUser } = require('../lib/auth');
-const { streamPdf, debugCategory, debugPath, FOLDERS } = require('../lib/pdfs');
+const { streamPdf, debugCategory, debugPath, debugGet, FOLDERS } = require('../lib/pdfs');
 
 module.exports = async (req, res) => {
   try {
@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
     if (!FOLDERS[cat] || !num) return res.status(400).end('cat and n are required');
     if (req.query && req.query.debug) {
       if (!me.isAdmin) return res.status(403).json({ error: 'admin only' });
+      if (req.query.get !== undefined) return res.status(200).json(await debugGet(String(req.query.get)));
       if (req.query.path !== undefined) return res.status(200).json(await debugPath(String(req.query.path), req.query.depth ? String(req.query.depth) : undefined));
       return res.status(200).json(await debugCategory(cat, num));
     }
