@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     if (!FOLDERS[cat] || !num) return res.status(400).end('cat and n are required');
     if (req.query && req.query.debug) {
       if (!me.isAdmin) return res.status(403).json({ error: 'admin only' });
-      if (req.query.path !== undefined) return res.status(200).json(await debugPath(String(req.query.path)));
+      if (req.query.path !== undefined) return res.status(200).json(await debugPath(String(req.query.path), req.query.depth ? String(req.query.depth) : undefined));
       return res.status(200).json(await debugCategory(cat, num));
     }
     await streamPdf(cat, num, res);
