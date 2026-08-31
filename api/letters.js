@@ -26,7 +26,6 @@ module.exports = async (req, res) => {
         const live = await readExcelLive();
         if (live.length) {
           normalizeCaseAgainst(live, letters); // align caps/spelling to history vocab
-          try { await attachPdfUrls(live); } catch (e) { console.error('PDF auto-link failed:', e.message); }
           letters = mergeExcelLive(letters, live);
           allTags = mergeVocab(allTags, live, 'tags', (l) => l.tags);
           allDocTypes = mergeVocab(allDocTypes, live, 'docTypes', (l) => l.docTypes);
@@ -34,6 +33,9 @@ module.exports = async (req, res) => {
           allDepts = mergeVocab(allDepts, live, 'department', (l) => (l.department ? [l.department] : []));
         }
       } catch (e) { console.error('Excel live overlay failed:', e.message); }
+      // Phonebook is the reliable PDF source (built from the real files by
+      // number). Apply it to ALL letters so wrong hand-pasted links get fixed.
+      try { await attachPdfUrls(letters); } catch (e) { console.error('PDF phonebook failed:', e.message); }
       res.setHeader('Cache-Control', 'no-store');
       return res.status(200).json({
         letters: filterLettersForUser(letters, me),
