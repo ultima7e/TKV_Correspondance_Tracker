@@ -823,9 +823,22 @@ function setRespFilter(val){
 // unreplied letter shows pending regardless of its age or how many there are.
 // (n kept only for call-site compatibility; it is intentionally ignored.)
 function initPendingForLatest(letters, n=20){
+  // A reply can arrive as its OWN letter that references the original, not just
+  // as a filled reply-column. Detect that too: our outgoing's "Engineer Ref."
+  // citing an incoming means that incoming is replied; the Engineer's incoming
+  // "Sinohydro Ref." citing our outgoing means that outgoing is replied.
+  // Year-agnostic key (prefix minus year + trailing number) so wrong years in
+  // ref cells still match, and "/Interface/" style variants collapse together.
+  const keyOf=num=>{const k=String(num||'').toLowerCase().trim();const p=k.split('/');return p.length>=4?p.slice(0,-2).join('/')+'/'+p[p.length-1]:k;};
+  const repliedKeys=new Set();
+  letters.forEach(l=>{
+    if(l.category==='outgoing')(l.engineerRefs||[]).forEach(r=>{if(r)repliedKeys.add(keyOf(r));});
+    else if(l.category==='incoming')(l.sinohydroRefs||[]).forEach(r=>{if(r)repliedKeys.add(keyOf(r));});
+  });
   letters.forEach(l=>{
     if(l.category!=='incoming'&&l.category!=='outgoing') return;
-    const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
+    const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0
+      || repliedKeys.has(keyOf(l.letterNumber));
     if(hasReply){
       if(l.pendingStatus!=='cleared') l.pendingStatus='replied';
       return;
