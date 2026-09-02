@@ -760,7 +760,8 @@ function pendingDisplayHTML(l){
   const canTrack=CAN_EDIT&&l._src!=='xlsx';
   // Auto-resolved via outgoing letter's Engineer's Ref (no rollback)
   if(ps==='replied'){
-    return `<span class="pending-badge is-replied">✓ Replied</span>`;
+    const rb=l._repliedBy?l._repliedBy.split('/').pop():'';
+    return `<span class="pending-badge is-replied"${l._repliedBy?` title="${esc(l._repliedBy)}"`:''}>✓ Replied${rb?' (#'+esc(rb)+')':''}</span>`;
   }
   if(ps==='pending'){
     return `<span class="pending-badge is-pending">⏳ Pending</span>`+
@@ -830,15 +831,21 @@ function initPendingForLatest(letters, n=20){
   // Year-agnostic key (prefix minus year + trailing number) so wrong years in
   // ref cells still match, and "/Interface/" style variants collapse together.
   const keyOf=num=>{const k=String(num||'').toLowerCase().trim();const p=k.split('/');return p.length>=4?p.slice(0,-2).join('/')+'/'+p[p.length-1]:k;};
-  const repliedKeys=new Set();
+  // key -> the letter number that replied to it (first one found)
+  const repliedBy={};
   letters.forEach(l=>{
-    if(l.category==='outgoing')(l.engineerRefs||[]).forEach(r=>{if(r)repliedKeys.add(keyOf(r));});
-    else if(l.category==='incoming')(l.sinohydroRefs||[]).forEach(r=>{if(r)repliedKeys.add(keyOf(r));});
+    const add=r=>{if(r){const k=keyOf(r);if(!repliedBy[k])repliedBy[k]=l.letterNumber;}};
+    if(l.category==='outgoing')(l.engineerRefs||[]).forEach(add);
+    else if(l.category==='incoming')(l.sinohydroRefs||[]).forEach(add);
   });
   letters.forEach(l=>{
     if(l.category!=='incoming'&&l.category!=='outgoing') return;
-    const hasReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0
-      || repliedKeys.has(keyOf(l.letterNumber));
+    const ownReply=(l.sinoReplies||[]).length>0||(l.engineerReplies||[]).length>0;
+    const citedBy=repliedBy[keyOf(l.letterNumber)];
+    // remember the replying letter so the badge can show its number (only when
+    // the reply came from a referencing letter, not the letter's own reply field)
+    l._repliedBy = (!ownReply && citedBy) ? citedBy : null;
+    const hasReply=ownReply || !!citedBy;
     if(hasReply){
       if(l.pendingStatus!=='cleared') l.pendingStatus='replied';
       return;
