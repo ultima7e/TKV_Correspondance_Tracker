@@ -2659,13 +2659,74 @@ function renderCalStats(){
     totalOut  += dateMap[d].outgoing.length;
     totalOther += (dateMap[d].other||[]).length;
   });
+  // Pending counts for THIS month (incoming/outgoing), used by the export buttons.
+  const prefix2 = prefix;
+  const monthLetters = ST.letters.filter(l=>(l.sendDate||"").slice(0,10).startsWith(prefix2));
+  const pendOutN = monthLetters.filter(l=>l.category==='outgoing'&&isPending(l)).length;
+  const pendInN  = monthLetters.filter(l=>l.category==='incoming'&&isPending(l)).length;
+  const expBtn=(cat,n,bg,fg,bd,label)=>`<button onclick="exportCalPending('${cat}')" ${n?'':'disabled'} title="Download this month's pending ${label} letters as Excel (Send Date, Letter No., Subject, Department)" style="display:inline-flex;align-items:center;gap:5px;background:${n?bg:'#1e293b'};color:${n?fg:'#64748b'};border:1px solid ${n?bd:'#334155'};border-radius:7px;padding:4px 11px;font-size:10px;font-weight:800;cursor:${n?'pointer':'not-allowed'}">⬇ 📊 ${label} pending (${n})</button>`;
   const el = document.getElementById("cal-stats");
   if(el) el.innerHTML = `
     <span class="cal-stat-pill" style="color:#10b981">↑ ${totalOut} Outgoing</span>
     <span class="cal-stat-pill" style="color:#0ea5e9">↓ ${totalIn} Incoming</span>
     ${totalOther?`<span class="cal-stat-pill" style="color:#8b5cf6">📋 ${totalOther} Other</span>`:""}
     <span class="cal-stat-pill" style="color:#94a3b8">${activeDays} active days</span>
+    <div style="flex-basis:100%;height:0"></div>
+    ${expBtn('outgoing',pendOutN,'#dcfce7','#166534','#86efac','Outgoing')}
+    ${expBtn('incoming',pendInN,'#e0f2fe','#0369a1','#7dd3fc','Incoming')}
   `;
+}
+
+// ── Export this month's PENDING letters (incoming or outgoing) to Excel ───────
+function calFmtSendDate(d){
+  const mo=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const p=String(d||"").slice(0,10).split("-");
+  if(p.length!==3) return String(d||"");
+  return parseInt(p[2],10)+"-"+mo[parseInt(p[1],10)-1]+"-"+p[0];
+}
+function calXlsEscape(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function buildPendingXls(rows, sheetName, monthLabel){
+  const B='<Borders>'+['Bottom','Top','Left','Right'].map(p=>`<Border ss:Position="${p}" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BFBFBF"/>`).join("")+'</Borders>';
+  const hdrs=["Send Date","Letter No.","Subject","Department"];
+  const cell=(v,style)=>`<Cell ss:StyleID="${style}"><Data ss:Type="String">${calXlsEscape(v)}</Data></Cell>`;
+  let body="";
+  rows.forEach(l=>{ body+='<Row ss:AutoFitHeight="1">'
+    +cell(calFmtSendDate(l.sendDate),'d')
+    +cell(l.letterNumber||"",'m')
+    +cell(l.subject||"",'s')
+    +cell(l.department||"",'c')+'</Row>'; });
+  return '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles>'
+    +`<Style ss:ID="hdr"><Font ss:Bold="1" ss:Size="11"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Interior ss:Color="#C6E0B4" ss:Pattern="Solid"/>${B}</Style>`
+    +`<Style ss:ID="ttl"><Font ss:Bold="1" ss:Size="12"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/></Style>`
+    +`<Style ss:ID="d"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/>${B}</Style>`
+    +`<Style ss:ID="m"><Alignment ss:Vertical="Center"/>${B}</Style>`
+    +`<Style ss:ID="s"><Alignment ss:Vertical="Center" ss:WrapText="1"/>${B}</Style>`
+    +`<Style ss:ID="c"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/>${B}</Style>`
+    +'</Styles>'
+    +`<Worksheet ss:Name="${calXlsEscape(sheetName)}"><Table>`
+    +'<Column ss:Width="82"/><Column ss:Width="215"/><Column ss:Width="440"/><Column ss:Width="95"/>'
+    +`<Row ss:Height="22"><Cell ss:StyleID="ttl" ss:MergeAcross="3"><Data ss:Type="String">${calXlsEscape(sheetName+" — "+monthLabel)}</Data></Cell></Row>`
+    +'<Row ss:Height="22">'+hdrs.map(h=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${calXlsEscape(h)}</Data></Cell>`).join("")+'</Row>'
+    +body
+    +'</Table></Worksheet></Workbook>';
+}
+function exportCalPending(cat){
+  const prefix = CAL.year+"-"+(CAL.month+1<10?"0":"")+(CAL.month+1);
+  const monthLabel = MONTHS[CAL.month]+" "+CAL.year;
+  const rows = ST.letters
+    .filter(l=>l.category===cat && String(l.sendDate||"").slice(0,10).startsWith(prefix) && isPending(l))
+    .sort((a,b)=>String(a.sendDate||"").localeCompare(String(b.sendDate||"")));
+  if(!rows.length){ alert("No pending "+cat+" letters in "+monthLabel+"."); return; }
+  const sheetName = cat==='incoming' ? 'Pending Incoming' : 'Pending Outgoing';
+  const xml = buildPendingXls(rows, sheetName, monthLabel);
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = sheetName+" "+monthLabel+".xls";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 150);
 }
 
 function renderCalendarGrid(){
