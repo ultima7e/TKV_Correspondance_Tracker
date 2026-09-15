@@ -2,6 +2,7 @@
 // found by matching the number to the filename. Auth-gated (logged-in users only).
 const { currentUser } = require('../lib/auth');
 const { streamPdf, debugCategory, debugPath, debugGet, FOLDERS } = require('../lib/pdfs');
+const { debugSheets } = require('../lib/excel');
 
 module.exports = async (req, res) => {
   try {
@@ -9,14 +10,19 @@ module.exports = async (req, res) => {
     if (!me) return res.status(401).end('Not authenticated');
     const cat = String((req.query && req.query.cat) || '');
     const num = String((req.query && req.query.n) || '').replace(/\D/g, '');
-    if (!FOLDERS[cat] || !num) return res.status(400).end('cat and n are required');
+    const subj = String((req.query && req.query.subj) || '');
+    if (!FOLDERS[cat]) return res.status(400).end('cat is required');
+    // Miscellaneous letters are addressed by subject (no number); all others by n.
+    if (cat === 'miscellaneous') { if (!subj) return res.status(400).end('subj is required'); }
+    else if (!num) return res.status(400).end('cat and n are required');
     if (req.query && req.query.debug) {
       if (!me.isAdmin) return res.status(403).json({ error: 'admin only' });
+      if (req.query.sheets !== undefined) return res.status(200).json(await debugSheets());
       if (req.query.get !== undefined) return res.status(200).json(await debugGet(String(req.query.get)));
       if (req.query.path !== undefined) return res.status(200).json(await debugPath(String(req.query.path), req.query.depth ? String(req.query.depth) : undefined));
       return res.status(200).json(await debugCategory(cat, num));
     }
-    await streamPdf(cat, num, res);
+    await streamPdf(cat, num, res, subj);
   } catch (e) {
     if (!res.headersSent) res.status(502).end('Error: ' + (e.message || e));
   }
