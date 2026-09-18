@@ -32,11 +32,28 @@ function pdfInFolder(dir, num) {
   const re = new RegExp('^\\s*0*' + num + '(?=\\D|$)');
   return pdfs.find((f) => re.test(f)) || pdfs[0] || null;
 }
+// Everything in the letter folder that ISN'T the letter itself: not the main PDF,
+// not a Word source (.doc/.docx), not a temp/hidden file. These are the letter's
+// attachments (reports, drawings, .zip/.rar bundles, extra PDFs). Multiple allowed.
+function attachmentsInFolder(dir, mainPdf) {
+  let files; try { files = fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
+  const out = [];
+  for (const e of files) {
+    if (!e.isFile()) continue;
+    const n = e.name;
+    if (n === mainPdf) continue;
+    if (/\.docx?$/i.test(n)) continue;
+    if (n.startsWith('~$') || n.startsWith('.')) continue;
+    out.push(n);
+  }
+  return out;
+}
 
-const index = { builtAt: new Date().toISOString(), root: ROOT, paths: {} };
+const index = { builtAt: new Date().toISOString(), root: ROOT, paths: {}, attachments: {} };
 for (const [cat, rel] of Object.entries(CATS)) {
   const dir = path.join(ROOT, rel);
   index.paths[cat] = {};
+  index.attachments[cat] = {};
   let entries;
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
   catch (e) { console.warn('  (skipped ' + cat + ': ' + e.code + ' ' + dir + ')'); continue; }
@@ -44,8 +61,11 @@ for (const [cat, rel] of Object.entries(CATS)) {
     const num = numOf(e.name);
     if (!num) continue;
     if (e.isDirectory()) {
-      const pdf = pdfInFolder(path.join(dir, e.name), num);
+      const sub = path.join(dir, e.name);
+      const pdf = pdfInFolder(sub, num);
       if (pdf) index.paths[cat][num] = (rel + '/' + e.name + '/' + pdf).replace(/\\/g, '/');
+      const atts = attachmentsInFolder(sub, pdf);
+      if (atts.length) index.attachments[cat][num] = atts.map((fn) => ({ name: fn, path: (rel + '/' + e.name + '/' + fn).replace(/\\/g, '/') }));
     } else if (/\.pdf$/i.test(e.name) && !isAttach(e.name)) {
       index.paths[cat][num] = (rel + '/' + e.name).replace(/\\/g, '/');
     }
@@ -54,7 +74,7 @@ for (const [cat, rel] of Object.entries(CATS)) {
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(index));
-console.log('Indexed: ' + Object.entries(index.paths).map(([c, m]) => c + '=' + Object.keys(m).length).join(', '));
+console.log('Indexed: ' + Object.entries(index.paths).map(([c, m]) => c + '=' + Object.keys(m).length + ' (att ' + Object.keys(index.attachments[c] || {}).length + ')').join(', '));
 for (const c of Object.keys(index.paths)) {
   const nums = Object.keys(index.paths[c]).map(Number).sort((a, b) => a - b);
   if (nums.length) console.log('  ' + c + ': ' + nums[0] + '..' + nums[nums.length - 1]);
