@@ -1406,12 +1406,12 @@ function renderContent(){
   const pageRows=rows.slice(pageStart,pageStart+ST.pageSize);
 
   const si=f=>ST.sort.f===f?`<span style="margin-left:2px;color:#2563eb">${ST.sort.d==="asc"?"↑":"↓"}</span>`:"";
-  const tblW=(isAll?75:0)+32+88+195+330+95+160+145+155+200+72+210;
+  const tblW=(isAll?75:0)+32+88+320+330+95+160+145+155+200+72+210;
   let html=`<div class="ltable-wrap"><div class="ltable-scroll"><table style="width:${tblW}px;table-layout:fixed"><thead><tr>
     <th style="width:32px;text-align:center">#</th>
     ${isAll?`<th style="width:75px">Category</th>`:""}
     <th style="width:88px" onclick="setSort('sendDate')">Send Date${si("sendDate")}</th>
-    <th style="width:195px" onclick="setSort('letterNumber')">Letter No.${si("letterNumber")}</th>
+    <th style="width:320px" onclick="setSort('letterNumber')">Letter No.${si("letterNumber")}</th>
     <th style="width:330px" onclick="setSort('subject')">Subject${si("subject")}</th>
     <th style="width:95px">Department</th><th style="width:145px">Doc Type</th><th style="width:155px">Location</th><th style="width:200px">Tags</th><th style="width:72px">Status</th><th style="width:160px">Reply Status</th><th style="width:210px"></th>
   </tr></thead><tbody>`;
@@ -1428,7 +1428,7 @@ function renderContent(){
     html+=`<tr><td class="col-idx" style="color:#94a3b8;text-align:center">${globalIdx+1}</td>
       ${isAll?`<td data-label="Category"><span class="cat-badge" style="background:${cat.bg};color:${cat.dark}">${cat.icon} ${cat.short}</span></td>`:""}
       <td data-label="Date" style="color:#475569;font-size:11px;overflow:hidden;white-space:nowrap">${fmtD(l.sendDate)}</td>
-      <td class="col-lno" data-label="Letter No." style="overflow:hidden"><button class="lno-btn" onclick="openDet('${l.id}')" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(l.letterNumber)}</button>${l.letterUrl?`<a class="lno-link-badge" href="${esc(l.letterUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="text-decoration:none" title="Open letter document">📄</a>`:""}${l.hardCopyDate?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">HC:${fmtD(l.hardCopyDate)}</div>`:""}</td>
+      <td class="col-lno" data-label="Letter No." style="overflow:hidden"><button class="lno-btn" onclick="openDet('${l.id}')">${esc(l.letterNumber)}</button>${l.letterUrl?`<a class="lno-link-badge" href="${esc(l.letterUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="text-decoration:none" title="Open letter document">📄</a>`:""}${l.hardCopyDate?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">HC:${fmtD(l.hardCopyDate)}</div>`:""}</td>
       <td class="col-subject" data-label="Subject" style="overflow:hidden"><div class="subj-cell"><div class="subj-text">${esc(l._cleanSubject)}</div></div></td>
       <td data-label="Department" style="overflow:hidden;font-size:11px;color:#475569">${l.department?`<span style="background:#f1f5f9;border-radius:5px;padding:2px 8px;display:inline-block;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis">${esc(l.department)}</span>`:"—"}</td>
       <td data-label="Doc Type" style="overflow:hidden"><div style="display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden">${dts}</div></td>
