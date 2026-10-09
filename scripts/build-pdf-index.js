@@ -11,9 +11,24 @@
 // Nutstore is touched. Run it whenever letters change (or on a schedule).
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-// Local Nutstore root on this PC. Override with env NUTSTORE_ROOT if different.
-const ROOT = process.env.NUTSTORE_ROOT || 'C:/Users/bhsag/Nutstore/1';
+// Local Nutstore root. Portable across devices: NUTSTORE_ROOT env wins, else try
+// the standard "<home>/Nutstore/1", else a couple of common fallbacks. This lets
+// the exact same script run on any PC that has Nutstore synced.
+function detectRoot() {
+  if (process.env.NUTSTORE_ROOT) return process.env.NUTSTORE_ROOT;
+  const candidates = [
+    path.join(os.homedir(), 'Nutstore', '1'),
+    path.join(os.homedir(), 'Nutstore'),
+    'C:/Users/bhsag/Nutstore/1',
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(path.join(c, 'Letter Recordings'))) return c;
+  }
+  return candidates[0];
+}
+const ROOT = detectRoot();
 
 // tracker category -> folder (relative to ROOT). These relative paths are also
 // exactly what the hosted app fetches over WebDAV, so store them as-is.
@@ -70,6 +85,16 @@ for (const [cat, rel] of Object.entries(CATS)) {
       index.paths[cat][num] = (rel + '/' + e.name).replace(/\\/g, '/');
     }
   }
+}
+
+// SAFETY: never overwrite a good phonebook with an empty one. If this device has
+// no letters synced (wrong ROOT / Nutstore not downloaded here), abort and leave
+// the existing pdf-index.json untouched.
+const totalLetters = Object.values(index.paths).reduce((a, m) => a + Object.keys(m).length, 0);
+if (totalLetters === 0) {
+  console.error('ABORT: found 0 letters under ' + ROOT + ' — is Nutstore synced here? Set NUTSTORE_ROOT.');
+  console.error('Leaving the existing pdf-index.json untouched.');
+  process.exit(1);
 }
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
