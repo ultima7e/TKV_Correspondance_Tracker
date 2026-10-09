@@ -97,6 +97,14 @@ if (totalLetters === 0) {
   process.exit(1);
 }
 
+// Skip the write when nothing changed. Rewriting the 1.4 MB file every run makes
+// Nutstore re-upload it each time (~2 GB/month), which blows the free-tier quota
+// and gets the account throttled (503s). Only write when letters actually change.
+const payload = JSON.stringify({ paths: index.paths, attachments: index.attachments });
+let prev = '';
+try { const e = JSON.parse(fs.readFileSync(OUT, 'utf8')); prev = JSON.stringify({ paths: e.paths || {}, attachments: e.attachments || {} }); } catch { /* no existing index */ }
+if (payload === prev) { console.log('Unchanged — skipping write (no Nutstore re-upload).'); process.exit(0); }
+
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(index));
 console.log('Indexed: ' + Object.entries(index.paths).map(([c, m]) => c + '=' + Object.keys(m).length + ' (att ' + Object.keys(index.attachments[c] || {}).length + ')').join(', '));
